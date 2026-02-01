@@ -50,7 +50,7 @@ export function Combobox({
                     variant="outline"
                     role="combobox"
                     aria-expanded={open}
-                    className={cn("w-full justify-between border-gray-100 bg-white font-bold text-gray-600 h-11", className)}
+                    className={cn("w-full justify-between border-border bg-card font-bold text-muted-foreground h-11", className)}
                 >
                     {value
                         ? options.find((option) => option.value === value)?.label
@@ -58,7 +58,7 @@ export function Combobox({
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-[--radix-popover-trigger-width] p-0 border-gray-100 shadow-none">
+            <PopoverContent className="w-[--radix-popover-trigger-width] p-0 border-border bg-card shadow-lg">
                 <Command>
                     <CommandInput placeholder={placeholder} className="h-9" />
                     <CommandList>
