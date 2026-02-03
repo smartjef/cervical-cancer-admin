@@ -1,12 +1,13 @@
 import { useState, useEffect, useCallback } from "react"
 import { apiRequest } from "@/lib/api"
 
-export function useApi<T>(path: string, options: RequestInit = {}) {
+export function useApi<T>(path: string | null, options: RequestInit = {}) {
     const [data, setData] = useState<T | null>(null)
-    const [isLoading, setIsLoading] = useState(true)
+    const [isLoading, setIsLoading] = useState(!!path)
     const [error, setError] = useState<string | null>(null)
 
     const fetchData = useCallback(async () => {
+        if (!path) return
         setIsLoading(true)
         setError(null)
         try {
@@ -20,8 +21,12 @@ export function useApi<T>(path: string, options: RequestInit = {}) {
     }, [path, JSON.stringify(options)])
 
     useEffect(() => {
-        fetchData()
-    }, [fetchData])
+        if (path) {
+            fetchData()
+        } else {
+            setIsLoading(false)
+        }
+    }, [path, fetchData])
 
     return { data, isLoading, error, refetch: fetchData }
 }

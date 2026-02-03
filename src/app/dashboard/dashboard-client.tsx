@@ -12,6 +12,7 @@ import {
     MoreVertical,
     BarChart3
 } from "lucide-react"
+import RecentActivityFeed from "@/components/recent-activity-feed"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { Bar, BarChart, XAxis, YAxis, ResponsiveContainer, Cell } from "recharts"
 
@@ -52,7 +53,7 @@ const stats = [
 
 const riskDistribution = [
     { name: "Low Risk", value: 65, color: "oklch(0.5 0.1 190)" },
-    { name: "Moderate Risk", value: 25, color: "oklch(0.7 0.15 80)" },
+    { name: "Medium Risk", value: 25, color: "oklch(0.7 0.15 80)" },
     { name: "High Risk", value: 10, color: "oklch(0.6 0.2 25)" },
 ]
 
@@ -61,11 +62,7 @@ const chpPerformance = [
     { name: "Peter Ochieng", subcounty: "Mathare Sub-county", performance: "88%", clients: 38, screenings: 19 },
 ]
 
-const recentActivity = [
-    { text: "Jane Wanjiku completed screening for Mary Njeri", time: "2 hours ago", color: "bg-primary" },
-    { text: "High-risk client referral generated", time: "4 hours ago", color: "bg-amber-500" },
-    { text: "New CHP training session scheduled", time: "1 day ago", color: "bg-secondary" },
-]
+// Recent activity is now handled by RecentActivityFeed component
 
 import { useApi } from "@/hooks/use-api"
 import dayjs from "dayjs"
@@ -75,7 +72,6 @@ dayjs.extend(relativeTime)
 
 export default function DashboardPage() {
     const { data: dashboardData, isLoading: dashboardLoading } = useApi<any>("/admin/dashboard/summary")
-    const { data: activityData, isLoading: activityLoading } = useApi<any>("/activities?limit=5")
     const { data: alertData, isLoading: alertLoading } = useApi<any>("/screenings?risk=HIGH_RISK&limit=3&includeForAllProviders=true")
 
     const stats = [
@@ -115,17 +111,13 @@ export default function DashboardPage() {
 
     const riskDistribution = dashboardData?.riskDistribution || [
         { name: "Low Risk", value: 0, color: "oklch(0.5 0.1 190)" },
-        { name: "Moderate Risk", value: 0, color: "oklch(0.7 0.15 80)" },
+        { name: "Medium Risk", value: 0, color: "oklch(0.7 0.15 80)" },
         { name: "High Risk", value: 0, color: "oklch(0.6 0.2 25)" },
     ]
 
     const chpPerformance = dashboardData?.chpPerformance || []
 
-    const recentActivities = activityData?.results?.map((activity: any) => ({
-        text: activity.description,
-        time: dayjs(activity.createdAt).fromNow(),
-        color: activity.type === 'error' ? 'bg-red-500' : 'bg-primary'
-    })) || []
+    // Recent activities are now handled by RecentActivityFeed
 
     const priorityAlerts = alertData?.results?.map((s: any) => ({
         title: 'High Risk',
@@ -135,22 +127,26 @@ export default function DashboardPage() {
 
     return (
         <DashboardShell title="Analytics Dashboard" subtitle="Pearl Hospital">
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-6">
-                {stats.map((stat) => (
-                    <Card key={stat.title} className="border-none transition-shadow bg-card shadow-sm hover:shadow-md">
-                        <CardContent className="p-6">
-                            <div className="flex items-center justify-between mb-2">
-                                <span className="text-4xl font-bold text-foreground">
-                                    {stat.value}
-                                </span>
-                                <div className={`${stat.bg} ${stat.color} p-2.5 rounded-xl`}>
-                                    <stat.icon className="h-6 w-6" />
-                                </div>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-0 md:gap-6 mb-8 overflow-hidden rounded-2xl border border-border/50 md:border-none md:rounded-none bg-card md:bg-transparent shadow-sm md:shadow-none">
+                {stats.map((stat: any, index: number) => (
+                    <div
+                        key={stat.title}
+                        className={`p-5 md:p-6 md:bg-card md:rounded-2xl md:shadow-sm transition-all hover:shadow-md border-border/50 
+                            ${index % 2 === 0 ? "border-r" : ""} 
+                            ${index < 2 ? "border-b" : ""} 
+                            md:border-none`}
+                    >
+                        <div className="flex items-center justify-between mb-2">
+                            <span className="text-2xl md:text-3xl lg:text-4xl font-black text-foreground">
+                                {stat.value}
+                            </span>
+                            <div className={`${stat.bg} ${stat.color} p-2 rounded-lg md:rounded-xl`}>
+                                <stat.icon className="h-4 w-4 md:h-6 md:w-6" />
                             </div>
-                            <p className="text-foreground font-semibold mb-1">{stat.title}</p>
-                            <p className="text-xs text-muted-foreground font-medium">{stat.change}</p>
-                        </CardContent>
-                    </Card>
+                        </div>
+                        <p className="text-xs md:text-sm lg:text-base text-foreground font-bold mb-0.5">{stat.title}</p>
+                        <p className="text-[10px] md:text-xs text-muted-foreground font-medium">{stat.change}</p>
+                    </div>
                 ))}
             </div>
 
@@ -221,7 +217,6 @@ export default function DashboardPage() {
                                         </div>
                                         <div>
                                             <p className="text-sm font-bold text-foreground">{chp.name}</p>
-                                            <p className="text-xs text-muted-foreground">{chp.subcounty || "Unassigned"}</p>
                                             <div className="flex gap-3 mt-1.5">
                                                 <span className="text-[10px] text-muted-foreground/60"><span className="font-bold text-muted-foreground">{chp.clients}</span> clients</span>
                                                 <span className="text-[10px] text-muted-foreground/60"><span className="font-bold text-muted-foreground">{chp.screenings}</span> screenings</span>
@@ -247,38 +242,8 @@ export default function DashboardPage() {
                     <CardHeader>
                         <CardTitle className="text-lg font-bold text-foreground">Recent Activity</CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-6">
-                        {dashboardLoading ? (
-                            <div className="space-y-4">
-                                {[1, 2, 3].map((i) => (
-                                    <div key={i} className="flex gap-4 animate-pulse">
-                                        <div className="w-2 h-2 rounded-full bg-gray-200 mt-1.5"></div>
-                                        <div className="flex-1 space-y-2">
-                                            <div className="h-3 bg-gray-200 w-3/4"></div>
-                                            <div className="h-2 bg-gray-100 w-1/4"></div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        ) : recentActivities.length > 0 ? (
-                            recentActivities.slice(0, 5).map((activity: any, i: number) => (
-                                <div key={i} className="flex gap-4 relative">
-                                    <div className="flex flex-col items-center">
-                                        <div className={`w-2 h-2 rounded-full ${activity.color} shrink-0 mt-1.5`}></div>
-                                        {i !== recentActivities.length - 1 && <div className="w-0.5 h-full bg-muted my-1"></div>}
-                                    </div>
-                                    <div className="pb-4">
-                                        <p className="text-sm font-medium text-foreground">{activity.text}</p>
-                                        <p className="text-[10px] text-muted-foreground font-medium mt-1">{activity.time}</p>
-                                    </div>
-                                </div>
-                            ))
-                        ) : (
-                            <div className="flex flex-col items-center justify-center py-10 text-center">
-                                <Calendar className="h-10 w-10 text-muted-foreground/20 mb-3" />
-                                <p className="text-sm text-muted-foreground font-medium">No recent activity recorded</p>
-                            </div>
-                        )}
+                    <CardContent className="p-6 pt-0">
+                        <RecentActivityFeed limit={5} />
                     </CardContent>
                 </Card>
             </div>

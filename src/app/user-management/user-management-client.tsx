@@ -5,6 +5,7 @@ import DashboardShell from "@/components/dashboard-shell"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import RecentActivityFeed from "@/components/recent-activity-feed"
 import { Badge } from "@/components/ui/badge"
 import { Combobox } from "@/components/combobox"
 import {
@@ -23,10 +24,13 @@ import {
     Trash2,
     AlertCircle,
     X,
-    Plus,
-    Check
+    Eye,
+    CheckCircle2,
+    ChevronLeft,
+    ChevronRight
 } from "lucide-react"
 import { apiRequest } from "@/lib/api"
+import { useToast } from "@/hooks/use-toast"
 import {
     Dialog,
     DialogContent,
@@ -46,6 +50,7 @@ import {
 
 import { useApi } from "@/hooks/use-api"
 import dayjs from "dayjs"
+import Link from "next/link"
 import relativeTime from "dayjs/plugin/relativeTime"
 
 dayjs.extend(relativeTime)
@@ -54,14 +59,17 @@ export default function UserManagementPage() {
     const [roleFilter, setRoleFilter] = useState("all")
     const [statusFilter, setStatusFilter] = useState("all")
     const [search, setSearch] = useState("")
+    const [currentPage, setCurrentPage] = useState(1)
+    const pageSize = 5
 
     // 1. Fetch System Users (Admins, CHPs) from Better-Auth Admin API
     const { data: authData, isLoading: authLoading, refetch: refetchAuth } = useApi<any>("/auth/admin/list-users?limit=100")
 
-    // 2. Fetch Clients from regular Clients API
-    const { data: clientData, isLoading: clientLoading, refetch: refetchClients } = useApi<any>(`/clients?limit=1000${search ? `&search=${search}` : ""}`)
+    // 2. Fetch CHPs to get performance and counts
+    const { data: chpsData, isLoading: chpLoading, refetch: refetchChps } = useApi<any>("/chps?limit=1000")
 
-    const { data: activityData, isLoading: activityLoading, refetch: refetchActivity } = useApi<any>("/activities")
+    // 3. Fetch Clients from regular Clients API
+    const { data: clientData, isLoading: clientLoading, refetch: refetchClients } = useApi<any>(`/clients?limit=1000${search ? `&search=${search}` : ""}`)
 
     // --- Create User States ---
     const [isAddUserOpen, setIsAddUserOpen] = useState(false)
@@ -81,6 +89,7 @@ export default function UserManagementPage() {
         dateOfBirth: "1990-01-01" // Added for client form reset
     })
     const [error, setError] = useState<string | null>(null)
+    const { toast } = useToast()
 
     const handleCreateUser = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -129,7 +138,11 @@ export default function UserManagementPage() {
 
             setIsAddUserOpen(false)
             refetchAll()
-            refetchActivity()
+            toast({
+                title: "User Created",
+                description: `${newUser.firstName} ${newUser.lastName} has been added successfully.`,
+                variant: "success"
+            })
             // Reset form
             setNewUser({
                 role: "admin",
@@ -183,28 +196,43 @@ export default function UserManagementPage() {
         if (roleFilter === 'all' || roleFilter === 'chp' || roleFilter === 'admin') {
             const filteredAuth = systemUsers.filter((u: any) => {
                 if (roleFilter !== 'all' && u.role !== roleFilter) return false
+                if (statusFilter !== 'all') {
+                    const isActive = !u.banned
+                    if (statusFilter === 'active' && !isActive) return false
+                    if (statusFilter === 'inactive' && isActive) return false
+                }
                 if (search && !u.name?.toLowerCase().includes(search.toLowerCase()) && !u.email?.toLowerCase().includes(search.toLowerCase())) return false
                 return true
             })
 
-            results.push(...filteredAuth.map((u: any) => ({
-                id: u.id,
-                name: u.name || u.email,
-                role: u.role?.toUpperCase() || "USER",
-                status: u.banned ? "Banned" : "Active",
-                location: "AIC Pearl Hospital",
-                phone: u.phoneNumber || "N/A",
-                lastActive: dayjs(u.updatedAt).fromNow(),
-                performance: u.role === 'chp' ? "Calculated" : undefined,
-                banned: !!u.banned,
-                type: u.role === 'chp' ? 'chp' : 'user'
-            })))
+            results.push(...filteredAuth.map((u: any) => {
+                const chpInfo = chpsData?.results?.find((c: any) => c.userId === u.id)
+                return {
+                    id: u.id,
+                    chpId: chpInfo?.id,
+                    name: u.name || u.email,
+                    role: u.role?.toUpperCase() || "USER",
+                    status: u.banned ? "Inactive" : "Active",
+                    location: "AIC Pearl Hospital",
+                    phone: u.phoneNumber || "N/A",
+                    lastActive: dayjs(u.updatedAt).fromNow(),
+                    performance: u.role === 'chp' ? (chpInfo?._count?.screenings > 20 ? "High" : chpInfo?._count?.screenings > 5 ? "Normal" : "Baseline") : undefined,
+                    clientsCount: chpInfo?._count?.clients || 0,
+                    screeningsCount: chpInfo?._count?.screenings || 0,
+                    banned: !!u.banned,
+                    type: u.role === 'chp' ? 'chp' : 'user'
+                }
+            }))
         }
 
         // Add Clients
         if (roleFilter === 'all' || roleFilter === 'client') {
             const clients = clientData?.results || []
-            results.push(...clients.map((c: any) => ({
+            const filteredClients = clients.filter((c: any) => {
+                if (statusFilter === 'inactive') return false // Clients are always active for now
+                return true
+            })
+            results.push(...filteredClients.map((c: any) => ({
                 id: c.id,
                 name: `${c.firstName} ${c.lastName}`,
                 role: "Client",
@@ -218,52 +246,26 @@ export default function UserManagementPage() {
         }
 
         return results.sort((a, b) => b.lastActive.localeCompare(a.lastActive))
-    }, [authData, clientData, roleFilter, search])
+    }, [authData, clientData, roleFilter, statusFilter, search])
+
+    const totalPages = Math.ceil(usersList.length / pageSize)
+    const paginatedUsers = useMemo(() => {
+        const start = (currentPage - 1) * pageSize
+        return usersList.slice(start, start + pageSize)
+    }, [usersList, currentPage])
+
+    // Reset page when filters change
+    useMemo(() => {
+        setCurrentPage(1)
+    }, [roleFilter, statusFilter, search])
 
     const refetchAll = () => {
         refetchAuth()
+        refetchChps()
         refetchClients()
     }
 
-    const handleDelete = async (user: any) => {
-        if (!confirm(`Are you sure you want to delete ${user.name}?`)) return
-        try {
-            const endpoint = user.type === 'client' ? `/clients/${user.id}` : (user.type === 'chp' ? `/chps/${user.id}` : `/auth/admin/remove-user`)
-            const options = user.type === 'user' || user.type === 'chp'
-                ? { method: 'POST', body: JSON.stringify({ userId: user.id }) } // removal by better-auth admin plugin
-                : { method: 'DELETE' }
-
-            await apiRequest(endpoint, options)
-            refetchAll()
-        } catch (error) {
-            console.error("Failed to delete user", error)
-        }
-    }
-
-    const handleToggleStatus = async (user: any) => {
-        if (user.type === 'client') return
-        const isBanned = user.banned
-        try {
-            const endpoint = isBanned ? `/auth/admin/unban-user` : `/auth/admin/ban-user`
-            await apiRequest(endpoint, {
-                method: 'POST',
-                body: JSON.stringify({ userId: user.id })
-            })
-            refetchAll()
-        } catch (error) {
-            console.error("Failed to update status", error)
-        }
-    }
-
-    const recentActivities = activityData?.results?.map((activity: any) => ({
-        text: activity.description || "System activity recorded",
-        time: dayjs(activity.createdAt).fromNow(),
-        color: activity.type === 'error' ? 'bg-red-500' : 'bg-primary'
-    })) || [
-            { text: "Jane Wanjiku completed screening for Mary Njeri", time: "2 hours ago", color: "bg-primary" },
-            { text: "High-risk client referral generated", time: "4 hours ago", color: "bg-amber-500" },
-            { text: "New CHP training session scheduled", time: "1 day ago", color: "bg-secondary" },
-        ]
+    const activities = [] // Placeholder to keep JSX stable if needed, but we'll remove usage
 
     return (
         <DashboardShell title="User Management" subtitle="Pearl Hospital">
@@ -481,21 +483,25 @@ export default function UserManagementPage() {
                 </Dialog>
             </div>
 
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
-                {userStats.map((stat) => (
-                    <Card key={stat.title} className="border-none bg-card shadow-sm">
-                        <CardContent className="p-6">
-                            <div className="flex items-center justify-between mb-4">
-                                <span className="text-4xl font-bold text-foreground">
-                                    {stat.value}
-                                </span>
-                                <div className={`${stat.bg} ${stat.color} p-2.5 rounded-xl`}>
-                                    <stat.icon className="h-6 w-6" />
-                                </div>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-0 md:gap-6 mb-8 overflow-hidden rounded-2xl border border-border/50 md:border-none md:rounded-none bg-card md:bg-transparent shadow-sm md:shadow-none">
+                {userStats.map((stat, index) => (
+                    <div
+                        key={stat.title}
+                        className={`p-5 md:p-6 md:bg-card md:rounded-2xl md:shadow-sm transition-all hover:shadow-md border-border/50 
+                            ${index % 2 === 0 ? "border-r" : ""} 
+                            ${index < 2 ? "border-b" : ""} 
+                            md:border-none`}
+                    >
+                        <div className="flex items-center justify-between mb-2 md:mb-4">
+                            <span className="text-2xl md:text-3xl lg:text-4xl font-black text-foreground">
+                                {stat.value}
+                            </span>
+                            <div className={`${stat.bg} ${stat.color} p-2 rounded-lg md:rounded-xl`}>
+                                <stat.icon className="h-4 w-4 md:h-6 md:w-6" />
                             </div>
-                            <p className="text-lg font-bold text-foreground">{stat.title}</p>
-                        </CardContent>
-                    </Card>
+                        </div>
+                        <p className="text-xs md:text-sm lg:text-lg font-bold text-foreground">{stat.title}</p>
+                    </div>
                 ))}
             </div>
 
@@ -527,7 +533,6 @@ export default function UserManagementPage() {
                             { label: "All Status", value: "all" },
                             { label: "Active", value: "active" },
                             { label: "Inactive", value: "inactive" },
-                            { label: "Suspended", value: "suspended" },
                         ]}
                         value={statusFilter}
                         onValueChange={setStatusFilter}
@@ -553,8 +558,8 @@ export default function UserManagementPage() {
                                     </Card>
                                 ))}
                             </div>
-                        ) : usersList.length > 0 ? (
-                            usersList.map((user: any) => (
+                        ) : paginatedUsers.length > 0 ? (
+                            paginatedUsers.map((user: any) => (
                                 <Card key={user.id} className="border-none group overflow-hidden transition-all bg-card hover:bg-primary/5">
                                     <CardContent className="p-4 py-3">
                                         <div className="flex items-center justify-between">
@@ -573,55 +578,64 @@ export default function UserManagementPage() {
                                                             <span className={`text-[9px] font-bold ${user.status === 'Active' ? 'text-primary' : 'text-red-500'} uppercase tracking-wider`}>{user.status}</span>
                                                         </div>
                                                     </div>
-                                                    <div className="flex items-center gap-4 mt-0.5">
-                                                        <div className="flex items-center gap-1.5 text-[10px] font-medium text-muted-foreground">
-                                                            <MapPin className="h-3 w-3 opacity-60" />
-                                                            {user.location}
+                                                    {user.type === 'chp' ? (
+                                                        <div className="flex items-center gap-6 mt-1.5">
+                                                            <div className="flex flex-col">
+                                                                <span className="text-sm font-black text-foreground leading-none">{user.clientsCount}</span>
+                                                                <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-tighter mt-0.5">Clients</span>
+                                                            </div>
+                                                            <div className="flex flex-col border-l border-border/30 pl-4">
+                                                                <span className="text-sm font-black text-foreground leading-none">{user.screeningsCount}</span>
+                                                                <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-tighter mt-0.5">Screenings</span>
+                                                            </div>
+                                                            <div className="flex flex-col border-l border-border/30 pl-4">
+                                                                <span className="text-sm font-black text-primary leading-none">{user.performance}</span>
+                                                                <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-tighter mt-0.5">Perf.</span>
+                                                            </div>
                                                         </div>
-                                                        <div className="flex items-center gap-1.5 text-[10px] font-medium text-muted-foreground">
-                                                            <Phone className="h-3 w-3 opacity-60" />
-                                                            {user.phone}
+                                                    ) : (
+                                                        <div className="flex items-center gap-4 mt-0.5">
+                                                            <div className="flex items-center gap-1.5 text-[10px] font-medium text-muted-foreground">
+                                                                <MapPin className="h-3 w-3 opacity-60" />
+                                                                {user.location}
+                                                            </div>
+                                                            <div className="flex items-center gap-1.5 text-[10px] font-medium text-muted-foreground">
+                                                                <Phone className="h-3 w-3 opacity-60" />
+                                                                {user.phone}
+                                                            </div>
+                                                            <div className="flex items-center gap-1.5 text-[10px] font-medium text-muted-foreground">
+                                                                <Calendar className="h-3 w-3 opacity-60" />
+                                                                {user.lastActive}
+                                                            </div>
                                                         </div>
-                                                        <div className="flex items-center gap-1.5 text-[10px] font-medium text-muted-foreground">
-                                                            <Calendar className="h-3 w-3 opacity-60" />
-                                                            {user.lastActive}
-                                                        </div>
-                                                    </div>
+                                                    )}
                                                 </div>
                                             </div>
 
                                             <div className="flex items-center gap-4">
                                                 <div className="hidden group-hover:flex items-center gap-2 transition-all">
-                                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10">
-                                                        <Edit3 className="h-3.5 w-3.5" />
-                                                    </Button>
-                                                    {user.type !== 'client' && (
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="icon"
-                                                            className={`h-8 w-8 ${user.banned ? 'text-primary hover:bg-primary/10' : 'text-gray-400 hover:text-amber-600 hover:bg-amber-50'}`}
-                                                            onClick={() => handleToggleStatus(user)}
-                                                        >
-                                                            {user.banned ? <PlayCircle className="h-3.5 w-3.5" /> : <PauseCircle className="h-3.5 w-3.5" />}
+                                                    {(user.type === 'client' && user.id) || (user.type !== 'client' && user.id) ? (
+                                                        <Link href={user.type === 'client' ? `/user-management/clients/${user.id}` : `/user-management/system-users/${user.id}`}>
+                                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10">
+                                                                <Eye className="h-4 w-4" />
+                                                            </Button>
+                                                        </Link>
+                                                    ) : (
+                                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground/30 cursor-not-allowed" disabled>
+                                                            <Eye className="h-4 w-4" />
                                                         </Button>
                                                     )}
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="h-8 w-8 text-gray-400 hover:text-red-600 hover:bg-red-50"
-                                                        onClick={() => handleDelete(user)}
-                                                    >
-                                                        <Trash2 className="h-3.5 w-3.5" />
-                                                    </Button>
                                                 </div>
 
-                                                <div className="text-right min-w-[60px]">
-                                                    {user.performance && (
-                                                        <>
-                                                            <p className="text-sm font-bold text-primary">{user.performance}</p>
-                                                            <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-tight">Perf.</p>
-                                                        </>
-                                                    )}
+                                                <div className="text-right flex items-center gap-6">
+                                                    <div className="text-right min-w-[60px]">
+                                                        {user.type !== 'chp' && user.performance && (
+                                                            <>
+                                                                <p className="text-sm font-bold text-primary">{user.performance}</p>
+                                                                <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-tight">Perf.</p>
+                                                            </>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -636,32 +650,55 @@ export default function UserManagementPage() {
                             </div>
                         )}
                     </div>
+
+                    {/* Pagination Controls */}
+                    {totalPages > 1 && (
+                        <div className="flex items-center justify-between pt-4">
+                            <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest">
+                                Page {currentPage} of {totalPages}
+                            </p>
+                            <div className="flex items-center gap-2">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                                    disabled={currentPage === 1}
+                                    className="h-8 w-8 p-0"
+                                >
+                                    <ChevronLeft className="h-4 w-4" />
+                                </Button>
+                                <div className="flex items-center gap-1">
+                                    {[...Array(totalPages)].map((_, i) => (
+                                        <Button
+                                            key={i + 1}
+                                            variant={currentPage === i + 1 ? "default" : "outline"}
+                                            size="sm"
+                                            onClick={() => setCurrentPage(i + 1)}
+                                            className="h-8 w-8 p-0 text-xs font-bold"
+                                        >
+                                            {i + 1}
+                                        </Button>
+                                    ))}
+                                </div>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                                    disabled={currentPage === totalPages}
+                                    className="h-8 w-8 p-0"
+                                >
+                                    <ChevronRight className="h-4 w-4" />
+                                </Button>
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 <div className="space-y-4">
                     <h3 className="text-base font-bold text-foreground">Recent Activity</h3>
                     <Card className="border-none h-fit bg-card shadow-sm">
-                        <CardContent className="p-6 space-y-6">
-                            {activityLoading ? (
-                                <div className="space-y-4">
-                                    {[1, 2, 3].map(i => <div key={i} className="h-8 bg-gray-50 animate-pulse"></div>)}
-                                </div>
-                            ) : recentActivities.length > 0 ? (
-                                recentActivities.slice(0, 5).map((activity: any, i: number) => (
-                                    <div key={i} className="flex gap-4">
-                                        <div className={`w-2 h-2 rounded-full ${activity.color} shrink-0 mt-1.5`}></div>
-                                        <div>
-                                            <p className="text-sm font-medium text-foreground leading-tight">{activity.text}</p>
-                                            <p className="text-[10px] text-muted-foreground font-bold mt-1 uppercase">{activity.time}</p>
-                                        </div>
-                                    </div>
-                                ))
-                            ) : (
-                                <div className="flex flex-col items-center justify-center py-6 text-center">
-                                    <Calendar className="h-8 w-8 text-muted-foreground/20 mb-2" />
-                                    <p className="text-xs text-muted-foreground font-medium">No recent activity recorded</p>
-                                </div>
-                            )}
+                        <CardContent className="p-6">
+                            <RecentActivityFeed limit={7} />
                         </CardContent>
                     </Card>
                 </div>
