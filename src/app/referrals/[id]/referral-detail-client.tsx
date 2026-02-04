@@ -18,7 +18,8 @@ import {
     CheckCircle2,
     AlertCircle,
     Building2,
-    StickyNote
+    StickyNote,
+    Eye
 } from "lucide-react"
 import dayjs from "dayjs"
 import Link from "next/link"
@@ -114,7 +115,7 @@ export default function ReferralDetailClient({ id }: ReferralDetailClientProps) 
                         </CardHeader>
                         <CardContent className="space-y-6">
                             <div className="space-y-3">
-                                <Link href={`/user-management/clients/${referral.screening?.clientId}`} className="flex items-center gap-3 text-sm group p-2 -mx-2 hover:bg-muted/50 rounded-lg transition-colors">
+                                <Link href={`/users/clients/${referral.screening?.clientId}`} className="flex items-center gap-3 text-sm group p-2 -mx-2 hover:bg-muted/50 rounded-lg transition-colors">
                                     <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                                         <User className="h-4 w-4 text-primary" />
                                     </div>
@@ -186,8 +187,10 @@ export default function ReferralDetailClient({ id }: ReferralDetailClientProps) 
                                             <p className="text-sm font-bold">Screening #{referral.screening?.id?.slice(-6).toUpperCase()}</p>
                                             <p className="text-xs text-muted-foreground">{dayjs(referral.screening?.createdAt).format("MMM D, YYYY")}</p>
                                         </div>
-                                        <Button variant="outline" size="sm" asChild>
-                                            <Link href={`/screening/${referral.screeningId}`}>View Screening</Link>
+                                        <Button variant="ghost" size="icon" asChild className="h-8 w-8 text-primary hover:text-primary hover:bg-primary/10">
+                                            <Link href={`/screening/${referral.screeningId}`}>
+                                                <Eye className="h-4 w-4" />
+                                            </Link>
                                         </Button>
                                     </div>
                                 </div>
@@ -221,6 +224,60 @@ export default function ReferralDetailClient({ id }: ReferralDetailClientProps) 
                                 <div className="space-y-1">
                                     <h4 className="text-xs font-bold text-muted-foreground uppercase">Outcome Notes</h4>
                                     <p className="text-sm">{referral.outcomeNotes || "No outcome notes recorded."}</p>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )}
+
+                    {referral.followUp && referral.followUp.outreachActions?.length > 0 && (
+                        <Card className="border-none bg-card shadow-sm">
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2">
+                                    <Calendar className="h-5 w-5 text-primary" />
+                                    Outreach History
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="space-y-6">
+                                    {referral.followUp.outreachActions.map((action: any, index: number) => (
+                                        <div key={action.id} className="relative pl-6 pb-6 last:pb-0 border-l border-border/50 last:border-l-0">
+                                            <div className="absolute left-[-5px] top-1 h-2.5 w-2.5 rounded-full bg-primary" />
+                                            <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+                                                <div className="space-y-1">
+                                                    <div className="flex items-center gap-2">
+                                                        <Badge variant="outline" className="text-[10px] uppercase font-bold tracking-wider">
+                                                            {action.actionType.replace('_', ' ')}
+                                                        </Badge>
+                                                        <span className="text-xs text-muted-foreground">
+                                                            {dayjs(action.actionDate).format("MMM D, YYYY • h:mm A")}
+                                                        </span>
+                                                    </div>
+                                                    <p className="text-sm font-bold text-foreground mt-1">
+                                                        Outcome: <span className="text-primary">{action.outcome.replace('_', ' ')}</span>
+                                                    </p>
+                                                    {action.notes && (
+                                                        <p className="text-sm text-muted-foreground mt-2 bg-muted/30 p-3 rounded-lg border border-border/50">
+                                                            {action.notes}
+                                                        </p>
+                                                    )}
+                                                    {action.barriers && (
+                                                        <div className="flex items-start gap-2 mt-2">
+                                                            <AlertCircle className="h-3.5 w-3.5 text-rose-500 mt-0.5 shrink-0" />
+                                                            <p className="text-xs text-rose-600 font-medium">Barrier: {action.barriers}</p>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                {action.nextPlannedDate && (
+                                                    <div className="shrink-0 text-right">
+                                                        <span className="text-[10px] font-bold text-muted-foreground uppercase block">Next Planned</span>
+                                                        <span className="text-xs font-bold text-foreground">
+                                                            {dayjs(action.nextPlannedDate).format("MMM D, YYYY")}
+                                                        </span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
                             </CardContent>
                         </Card>

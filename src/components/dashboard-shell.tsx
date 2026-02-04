@@ -20,9 +20,9 @@ export default function DashboardLayout({
         <SidebarProvider>
             <div className="flex min-h-screen w-full bg-background transition-colors duration-300">
                 <AppSidebar />
-                <main className="flex-1 flex flex-col overflow-hidden">
+                <main className="flex-1 flex flex-col overflow-y-auto">
                     <AppHeader title={title} subtitle={subtitle} />
-                    <div className="flex-1 overflow-y-auto">
+                    <div className="flex-1">
                         <div className="px-8 pt-8 flex items-center text-sm font-medium">
                             <span className="text-muted-foreground">Application</span>
                             {pathSegments.map((segment, index) => (

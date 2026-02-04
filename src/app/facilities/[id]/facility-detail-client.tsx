@@ -145,8 +145,12 @@ export default function FacilityDetailClient({ id }: FacilityDetailClientProps) 
                     <Card className="border-none bg-card shadow-sm sticky top-6">
                         <CardHeader className="pb-2">
                             <div className="flex justify-between items-start">
-                                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-                                    <Building2 className="h-6 w-6 text-primary" />
+                                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden border border-primary/20">
+                                    {facility.logo ? (
+                                        <img src={facility.logo} alt={facility.name} className="h-full w-full object-cover" />
+                                    ) : (
+                                        <Building2 className="h-6 w-6 text-primary" />
+                                    )}
                                 </div>
                                 <Badge className="bg-primary hover:bg-primary/90">Active</Badge>
                             </div>
@@ -155,6 +159,14 @@ export default function FacilityDetailClient({ id }: FacilityDetailClientProps) 
                         </CardHeader>
                         <CardContent className="space-y-6">
                             <div className="space-y-4">
+                                <div className="flex items-center gap-3 text-sm">
+                                    <MapPin className="h-4 w-4 text-muted-foreground shrink-0" />
+                                    <div className="flex flex-col">
+                                        <span className="text-[9px] font-black text-muted-foreground uppercase tracking-wider">Address</span>
+                                        <span className="font-bold">{facility.address || "N/A"}</span>
+                                    </div>
+                                </div>
+
                                 <div className="flex items-center gap-3 text-sm">
                                     <Building2 className="h-4 w-4 text-muted-foreground shrink-0" />
                                     <div className="flex flex-col">
@@ -284,7 +296,7 @@ export default function FacilityDetailClient({ id }: FacilityDetailClientProps) 
                                 header: "Client",
                                 accessorKey: "client",
                                 cell: (item: any) => (
-                                    <Link href={`/user-management/clients/${item.screening?.clientId}`} className="font-black text-xs hover:text-primary transition-colors flex items-center gap-2">
+                                    <Link href={`/users/clients/${item.screening?.clientId}`} className="font-black text-xs hover:text-primary transition-colors flex items-center gap-2">
                                         View Client Details
                                         <Activity className="h-3 w-3" />
                                     </Link>

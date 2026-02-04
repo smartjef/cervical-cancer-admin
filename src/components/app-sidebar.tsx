@@ -92,11 +92,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
     return (
         <Sidebar className="border-r border-border bg-sidebar text-sidebar-foreground" {...props}>
-            <SidebarHeader className="h-16 bg-sidebar flex items-center px-6">
-                <div className="flex items-center gap-2">
-                    <div className="h-10 px-3 bg-teal-500 rounded-lg flex items-center justify-center shadow-sm">
-                        <span className="text-white font-black text-sm tracking-tight">SCREEN-IT</span>
-                    </div>
+            <SidebarHeader className="p-0 border-none overflow-hidden">
+                <div className="h-20 bg-primary flex items-center justify-center w-full">
+                    <span className="text-white font-black text-xl tracking-[0.2em] ml-[0.2em]">SCREEN-IT</span>
                 </div>
             </SidebarHeader>
             <SidebarContent className="bg-sidebar">
@@ -112,15 +110,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                         relative h-14 w-full transition-all rounded-none
                                         hover:bg-primary/10 hover:text-primary
                                         data-[active=true]:bg-transparent data-[active=true]:text-primary
-                                        px-6
+                                        px-6 group/nav
                                     `}
                                 >
                                     <Link href={item.url} className="flex items-center gap-3">
                                         {isActive && (
                                             <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary" />
                                         )}
-                                        <item.icon className={`h-5 w-5 ${isActive ? 'text-primary' : 'text-muted-foreground'}`} />
-                                        <span className={`text-sm font-bold uppercase tracking-wider ${isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-primary'}`}>
+                                        <item.icon className={`h-5 w-5 ${isActive ? 'text-primary' : 'text-muted-foreground group-hover/nav:text-primary'}`} />
+                                        <span className={`text-sm font-bold uppercase tracking-wider ${isActive ? 'text-primary' : 'text-muted-foreground group-hover/nav:text-primary'}`}>
                                             {item.title}
                                         </span>
                                     </Link>
@@ -134,12 +132,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton
-                            className="hover:bg-destructive/10 hover:text-destructive transition-colors px-6 py-6 rounded-none cursor-pointer group"
+                            className="hover:bg-destructive/10 hover:text-destructive transition-colors px-6 py-6 rounded-none cursor-pointer group/logout"
                             onClick={() => setShowLogoutDialog(true)}
                         >
                             <div className="flex items-center gap-3">
-                                <LogOut className="h-5 w-5 text-muted-foreground group-hover:text-destructive" />
-                                <span className="text-sm font-bold text-muted-foreground uppercase tracking-wider group-hover:text-destructive">Logout</span>
+                                <LogOut className="h-5 w-5 text-muted-foreground group-hover/logout:text-destructive" />
+                                <span className="text-sm font-bold text-muted-foreground uppercase tracking-wider group-hover/logout:text-destructive">Logout</span>
                             </div>
                         </SidebarMenuButton>
                     </SidebarMenuItem>

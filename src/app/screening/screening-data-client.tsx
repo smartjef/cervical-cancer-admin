@@ -363,264 +363,262 @@ export default function ScreeningDataPage() {
                 </CardContent>
             </Card>
 
-            <Card className="border-none bg-card shadow-sm mb-12">
-                <DataTable
-                    columns={[
-                        {
-                            header: "Screening ID",
-                            accessorKey: "id",
-                            cell: (item: any) => (
-                                <Link href={`/screening/${item.id}`} className="font-mono text-[10px] font-bold text-primary hover:underline">
-                                    #{item.id.slice(-6).toUpperCase()}
-                                </Link>
-                            ),
-                            sortable: true,
-                            className: "pl-6"
-                        },
-                        {
-                            header: "Client Name",
-                            accessorKey: "client.firstName",
-                            cell: (item: any) => (
-                                <Link href={`/users/clients/${item.client?.id}`} className="font-bold text-foreground hover:underline">
-                                    {item.client?.firstName} {item.client?.lastName}
-                                </Link>
-                            ),
-                            sortable: true
-                        },
-                        {
-                            header: "Provider",
-                            accessorKey: "provider.firstName",
-                            cell: (item: any) => (
-                                <Link href={`/users/${item.provider?.id}`} className="text-muted-foreground font-medium hover:underline">
-                                    {item.provider?.firstName} {item.provider?.lastName}
-                                </Link>
-                            ),
-                            sortable: true
-                        },
-                        {
-                            header: "Location",
-                            accessorKey: "client.ward",
-                            cell: (item: any) => <div className="text-xs text-muted-foreground">{item.client?.ward || item.client?.subcounty || "N/A"}</div>,
-                            sortable: false
-                        },
-                        {
-                            header: "Risk Level",
-                            accessorKey: "scoringResult.interpretation",
-                            cell: (item: any) => (
-                                <Badge variant="outline" className={`
-                                    font-bold border-none px-2.5 py-0.5 rounded-full text-[10px] uppercase tracking-wider
-                                    ${item.scoringResult?.interpretation?.includes('HIGH') ? 'bg-rose-500/10 text-rose-600' :
-                                        (item.scoringResult?.interpretation?.includes('MEDIUM') || item.scoringResult?.interpretation?.includes('MODERATE')) ? 'bg-amber-500/10 text-amber-600' :
-                                            'bg-emerald-500/10 text-emerald-600'
-                                    }
-                                `}>
-                                    {item.scoringResult?.interpretation?.replace('_RISK', '').replace('MODERATE', 'MEDIUM') || 'N/A'}
-                                </Badge>
-                            ),
-                            sortable: true
-                        },
-                        {
-                            header: "Score",
-                            accessorKey: "scoringResult.aggregateScore",
-                            cell: (item: any) => <div className="font-bold text-primary text-sm">{item.scoringResult?.aggregateScore || 0}</div>,
-                            sortable: true
-                        },
-                        {
-                            header: "Age",
-                            accessorKey: "scoringResult.clientAge",
-                            cell: (item: any) => <div className="font-bold text-muted-foreground">{item.scoringResult?.clientAge || 'N/A'}</div>,
-                            sortable: true
-                        },
-                        {
-                            header: "Date",
-                            accessorKey: "createdAt",
-                            cell: (item: any) => <div className="font-medium text-muted-foreground">{dayjs(item.createdAt).format('MMM D, YYYY')}</div>,
-                            sortable: true,
-                            className: "text-right pr-6"
-                        }
-                    ]}
-                    data={screeningsData?.results || []}
-                    isLoading={screeningsLoading}
-                    totalCount={screeningsData?.totalCount || 0}
-                    page={page}
-                    setPage={setPage}
-                    limit={limit}
-                    setLimit={setLimit}
-                    controls={
-                        <div className="flex flex-col md:flex-row items-center justify-between gap-4 w-full">
-                            {/* Search Area */}
-                            <div className="flex-1 w-full md:max-w-md relative">
-                                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground/50" />
-                                <Input
-                                    placeholder="Search by client, provider..."
-                                    className="h-11 pl-9 font-bold border-2 w-full transition-all focus:border-primary/50"
-                                    value={search}
-                                    onChange={(e) => {
-                                        setSearch(e.target.value)
-                                        setPage(1)
-                                    }}
-                                />
-                            </div>
+            <DataTable
+                columns={[
+                    {
+                        header: "Screening ID",
+                        accessorKey: "id",
+                        cell: (item: any) => (
+                            <Link href={`/screening/${item.id}`} className="font-mono text-[10px] font-bold text-primary hover:underline">
+                                #{item.id.slice(-6).toUpperCase()}
+                            </Link>
+                        ),
+                        sortable: true,
+                        className: "pl-6"
+                    },
+                    {
+                        header: "Client Name",
+                        accessorKey: "client.firstName",
+                        cell: (item: any) => (
+                            <Link href={`/users/clients/${item.client?.id}`} className="font-bold text-foreground hover:underline">
+                                {item.client?.firstName} {item.client?.lastName}
+                            </Link>
+                        ),
+                        sortable: true
+                    },
+                    {
+                        header: "Provider",
+                        accessorKey: "provider.firstName",
+                        cell: (item: any) => (
+                            <Link href={`/users/${item.provider?.id}`} className="text-muted-foreground font-medium hover:underline">
+                                {item.provider?.firstName} {item.provider?.lastName}
+                            </Link>
+                        ),
+                        sortable: true
+                    },
+                    {
+                        header: "Location",
+                        accessorKey: "client.ward",
+                        cell: (item: any) => <div className="text-xs text-muted-foreground">{item.client?.ward || item.client?.subcounty || "N/A"}</div>,
+                        sortable: false
+                    },
+                    {
+                        header: "Risk Level",
+                        accessorKey: "scoringResult.interpretation",
+                        cell: (item: any) => (
+                            <Badge variant="outline" className={`
+                                font-bold border-none px-2.5 py-0.5 rounded-full text-[10px] uppercase tracking-wider
+                                ${item.scoringResult?.interpretation?.includes('HIGH') ? 'bg-rose-500/10 text-rose-600' :
+                                    (item.scoringResult?.interpretation?.includes('MEDIUM') || item.scoringResult?.interpretation?.includes('MODERATE')) ? 'bg-amber-500/10 text-amber-600' :
+                                        'bg-emerald-500/10 text-emerald-600'
+                                }
+                            `}>
+                                {item.scoringResult?.interpretation?.replace('_RISK', '').replace('MODERATE', 'MEDIUM') || 'N/A'}
+                            </Badge>
+                        ),
+                        sortable: true
+                    },
+                    {
+                        header: "Score",
+                        accessorKey: "scoringResult.aggregateScore",
+                        cell: (item: any) => <div className="font-bold text-primary text-sm">{item.scoringResult?.aggregateScore || 0}</div>,
+                        sortable: true
+                    },
+                    {
+                        header: "Age",
+                        accessorKey: "scoringResult.clientAge",
+                        cell: (item: any) => <div className="font-bold text-muted-foreground">{item.scoringResult?.clientAge || 'N/A'}</div>,
+                        sortable: true
+                    },
+                    {
+                        header: "Date",
+                        accessorKey: "createdAt",
+                        cell: (item: any) => <div className="font-medium text-muted-foreground">{dayjs(item.createdAt).format('MMM D, YYYY')}</div>,
+                        sortable: true,
+                        className: "text-right pr-6"
+                    }
+                ]}
+                data={screeningsData?.results || []}
+                isLoading={screeningsLoading}
+                totalCount={screeningsData?.totalCount || 0}
+                page={page}
+                setPage={setPage}
+                limit={limit}
+                setLimit={setLimit}
+                controls={
+                    <div className="flex flex-col md:flex-row items-center justify-between gap-4 w-full">
+                        {/* Search Area */}
+                        <div className="flex-1 w-full md:max-w-md relative">
+                            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground/50" />
+                            <Input
+                                placeholder="Search by client, provider..."
+                                className="h-11 pl-9 font-bold border-2 w-full transition-all focus:border-primary/50"
+                                value={search}
+                                onChange={(e) => {
+                                    setSearch(e.target.value)
+                                    setPage(1)
+                                }}
+                            />
+                        </div>
 
-                            {/* Actions Area */}
-                            <div className="flex items-center gap-3">
-                                <Popover>
-                                    <PopoverTrigger asChild>
-                                        <Button variant="outline" className="h-11 px-4 gap-2 border-2 font-bold text-[10px] uppercase tracking-wider bg-background hover:bg-muted/50 transition-colors">
-                                            <Filter className="h-3.5 w-3.5" />
-                                            Filter
-                                            {(dateRange !== "all" || chpFilter !== "all" || riskLevel !== "all" || countyFilter !== "all" || subcountyFilter !== "all" || wardFilter !== "all") && (
-                                                <Badge variant="secondary" className="ml-1 h-5 min-w-[20px] px-1 font-black bg-primary text-primary-foreground">
-                                                    {[dateRange, chpFilter, riskLevel, countyFilter, subcountyFilter, wardFilter].filter(f => f !== "all").length}
-                                                </Badge>
-                                            )}
+                        {/* Actions Area */}
+                        <div className="flex items-center gap-3">
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                    <Button variant="outline" className="h-11 px-4 gap-2 border-2 font-bold text-[10px] uppercase tracking-wider bg-background hover:bg-muted/50 transition-colors">
+                                        <Filter className="h-3.5 w-3.5" />
+                                        Filter
+                                        {(dateRange !== "all" || chpFilter !== "all" || riskLevel !== "all" || countyFilter !== "all" || subcountyFilter !== "all" || wardFilter !== "all") && (
+                                            <Badge variant="secondary" className="ml-1 h-5 min-w-[20px] px-1 font-black bg-primary text-primary-foreground">
+                                                {[dateRange, chpFilter, riskLevel, countyFilter, subcountyFilter, wardFilter].filter(f => f !== "all").length}
+                                            </Badge>
+                                        )}
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-80 p-5 space-y-5" align="end">
+                                    <div className="flex items-center justify-between">
+                                        <h4 className="font-black text-xs uppercase tracking-widest flex items-center gap-2">
+                                            <Filter className="h-3 w-3" />
+                                            Filter Screenings
+                                        </h4>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="h-8 px-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-destructive gap-1"
+                                            onClick={() => {
+                                                setDateRange("all");
+                                                setChpFilter("all");
+                                                setRiskLevel("all");
+                                                setCountyFilter("all");
+                                                setSubcountyFilter("all");
+                                                setWardFilter("all");
+                                                setPage(1);
+                                            }}
+                                        >
+                                            <RotateCcw className="h-3 w-3" />
+                                            Reset
                                         </Button>
-                                    </PopoverTrigger>
-                                    <PopoverContent className="w-80 p-5 space-y-5" align="end">
-                                        <div className="flex items-center justify-between">
-                                            <h4 className="font-black text-xs uppercase tracking-widest flex items-center gap-2">
-                                                <Filter className="h-3 w-3" />
-                                                Filter Screenings
-                                            </h4>
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                className="h-8 px-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-destructive gap-1"
-                                                onClick={() => {
-                                                    setDateRange("all");
-                                                    setChpFilter("all");
-                                                    setRiskLevel("all");
-                                                    setCountyFilter("all");
+                                    </div>
+
+                                    <Separator className="opacity-50" />
+
+                                    <div className="space-y-4 max-h-[400px] overflow-y-auto pr-1 custom-scrollbar">
+                                        <div className="space-y-2">
+                                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Date Range</Label>
+                                            <Combobox
+                                                options={[
+                                                    { label: "All Time", value: "all" },
+                                                    { label: "Last 7 days", value: "7" },
+                                                    { label: "Last 30 days", value: "30" },
+                                                    { label: "Last 90 days", value: "90" },
+                                                ]}
+                                                value={dateRange}
+                                                onValueChange={(val) => { setDateRange(val); setPage(1); }}
+                                                placeholder="Select Range"
+                                                className="border-2"
+                                            />
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">CHP Filter</Label>
+                                            <Combobox
+                                                options={chpOptions}
+                                                value={chpFilter}
+                                                onValueChange={(val) => { setChpFilter(val); setPage(1); }}
+                                                placeholder="Select CHP"
+                                                className="border-2"
+                                            />
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Risk Level</Label>
+                                            <Combobox
+                                                options={[
+                                                    { label: "All Risk Levels", value: "all" },
+                                                    { label: "Low Risk", value: "low" },
+                                                    { label: "Medium Risk", value: "medium" },
+                                                    { label: "High Risk", value: "high" },
+                                                ]}
+                                                value={riskLevel}
+                                                onValueChange={(val) => { setRiskLevel(val); setPage(1); }}
+                                                placeholder="Select Risk"
+                                                className="border-2"
+                                            />
+                                        </div>
+
+                                        <Separator className="opacity-50 my-2" />
+
+                                        <div className="space-y-2">
+                                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">County</Label>
+                                            <Combobox
+                                                options={countyOptions}
+                                                value={countyFilter}
+                                                onValueChange={(val) => {
+                                                    setCountyFilter(val);
                                                     setSubcountyFilter("all");
                                                     setWardFilter("all");
                                                     setPage(1);
                                                 }}
-                                            >
-                                                <RotateCcw className="h-3 w-3" />
-                                                Reset
-                                            </Button>
+                                                onSearchChange={setCountySearch}
+                                                isLoading={isCountiesLoading}
+                                                placeholder="Select County"
+                                                className="border-2"
+                                            />
                                         </div>
 
-                                        <Separator className="opacity-50" />
-
-                                        <div className="space-y-4 max-h-[400px] overflow-y-auto pr-1 custom-scrollbar">
-                                            <div className="space-y-2">
-                                                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Date Range</Label>
+                                        {countyFilter !== "all" && (
+                                            <div className="space-y-2 animate-in fade-in slide-in-from-top-1">
+                                                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Subcounty</Label>
                                                 <Combobox
-                                                    options={[
-                                                        { label: "All Time", value: "all" },
-                                                        { label: "Last 7 days", value: "7" },
-                                                        { label: "Last 30 days", value: "30" },
-                                                        { label: "Last 90 days", value: "90" },
-                                                    ]}
-                                                    value={dateRange}
-                                                    onValueChange={(val) => { setDateRange(val); setPage(1); }}
-                                                    placeholder="Select Range"
-                                                    className="border-2"
-                                                />
-                                            </div>
-
-                                            <div className="space-y-2">
-                                                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">CHP Filter</Label>
-                                                <Combobox
-                                                    options={chpOptions}
-                                                    value={chpFilter}
-                                                    onValueChange={(val) => { setChpFilter(val); setPage(1); }}
-                                                    placeholder="Select CHP"
-                                                    className="border-2"
-                                                />
-                                            </div>
-
-                                            <div className="space-y-2">
-                                                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Risk Level</Label>
-                                                <Combobox
-                                                    options={[
-                                                        { label: "All Risk Levels", value: "all" },
-                                                        { label: "Low Risk", value: "low" },
-                                                        { label: "Medium Risk", value: "medium" },
-                                                        { label: "High Risk", value: "high" },
-                                                    ]}
-                                                    value={riskLevel}
-                                                    onValueChange={(val) => { setRiskLevel(val); setPage(1); }}
-                                                    placeholder="Select Risk"
-                                                    className="border-2"
-                                                />
-                                            </div>
-
-                                            <Separator className="opacity-50 my-2" />
-
-                                            <div className="space-y-2">
-                                                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">County</Label>
-                                                <Combobox
-                                                    options={countyOptions}
-                                                    value={countyFilter}
+                                                    options={subcountyOptions}
+                                                    value={subcountyFilter}
                                                     onValueChange={(val) => {
-                                                        setCountyFilter(val);
-                                                        setSubcountyFilter("all");
+                                                        setSubcountyFilter(val);
                                                         setWardFilter("all");
                                                         setPage(1);
                                                     }}
-                                                    onSearchChange={setCountySearch}
-                                                    isLoading={isCountiesLoading}
-                                                    placeholder="Select County"
+                                                    onSearchChange={setSubcountySearch}
+                                                    isLoading={isSubcountiesLoading}
+                                                    placeholder="Select Subcounty"
                                                     className="border-2"
                                                 />
                                             </div>
+                                        )}
 
-                                            {countyFilter !== "all" && (
-                                                <div className="space-y-2 animate-in fade-in slide-in-from-top-1">
-                                                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Subcounty</Label>
-                                                    <Combobox
-                                                        options={subcountyOptions}
-                                                        value={subcountyFilter}
-                                                        onValueChange={(val) => {
-                                                            setSubcountyFilter(val);
-                                                            setWardFilter("all");
-                                                            setPage(1);
-                                                        }}
-                                                        onSearchChange={setSubcountySearch}
-                                                        isLoading={isSubcountiesLoading}
-                                                        placeholder="Select Subcounty"
-                                                        className="border-2"
-                                                    />
-                                                </div>
-                                            )}
+                                        {(countyFilter !== "all" && subcountyFilter !== "all") && (
+                                            <div className="space-y-2 animate-in fade-in slide-in-from-top-1">
+                                                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Ward</Label>
+                                                <Combobox
+                                                    options={wardOptions}
+                                                    value={wardFilter}
+                                                    onValueChange={(val) => {
+                                                        setWardFilter(val);
+                                                        setPage(1);
+                                                    }}
+                                                    onSearchChange={setWardSearch}
+                                                    isLoading={isWardsLoading}
+                                                    placeholder="Select Ward"
+                                                    className="border-2"
+                                                />
+                                            </div>
+                                        )}
+                                    </div>
+                                </PopoverContent>
+                            </Popover>
 
-                                            {(countyFilter !== "all" && subcountyFilter !== "all") && (
-                                                <div className="space-y-2 animate-in fade-in slide-in-from-top-1">
-                                                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Ward</Label>
-                                                    <Combobox
-                                                        options={wardOptions}
-                                                        value={wardFilter}
-                                                        onValueChange={(val) => {
-                                                            setWardFilter(val);
-                                                            setPage(1);
-                                                        }}
-                                                        onSearchChange={setWardSearch}
-                                                        isLoading={isWardsLoading}
-                                                        placeholder="Select Ward"
-                                                        className="border-2"
-                                                    />
-                                                </div>
-                                            )}
-                                        </div>
-                                    </PopoverContent>
-                                </Popover>
-
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={handleExport}
-                                    className="h-11 px-4 gap-2 bg-background font-bold text-[10px] uppercase tracking-wider shrink-0 border-2 hover:bg-muted/50 transition-colors"
-                                >
-                                    <Download className="h-4 w-4" />
-                                    Export
-                                </Button>
-                            </div>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={handleExport}
+                                className="h-11 px-4 gap-2 bg-background font-bold text-[10px] uppercase tracking-wider shrink-0 border-2 hover:bg-muted/50 transition-colors"
+                            >
+                                <Download className="h-4 w-4" />
+                                Export
+                            </Button>
                         </div>
-                    }
-                />
-            </Card>
+                    </div>
+                }
+            />
         </DashboardShell>
     )
 }

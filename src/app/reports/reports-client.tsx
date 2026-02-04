@@ -69,11 +69,6 @@ const reportTypes = [
     }
 ]
 
-const recentReports = [
-    { title: "January 2025 Screening Summary", type: "Screening Summary", date: "2025-01-28", size: "2.4 MB" },
-    { title: "Week 4 CHP Performance", type: "CHP Performance", date: "2025-01-27", size: "1.8 MB" },
-    { title: "Q4 2024 Compliance Report", type: "Compliance", date: "2025-01-20", size: "3.2 MB" },
-]
 
 export default function ReportsPage() {
     const { data: dashboardData, isLoading } = useApi<any>("/admin/dashboard/summary")
@@ -237,33 +232,6 @@ export default function ReportsPage() {
                 </div>
 
                 <div className="space-y-8">
-                    <Card className="border-none bg-card shadow-sm">
-                        <CardHeader>
-                            <CardTitle className="text-lg font-bold text-foreground">Recent Reports</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            {recentReports.map((report) => (
-                                <div key={report.title} className="p-4 bg-muted/30 flex items-center justify-between group">
-                                    <div className="flex-1">
-                                        <h4 className="text-xs font-bold text-foreground mb-1 line-clamp-1">{report.title}</h4>
-                                        <p className="text-[10px] text-muted-foreground mb-1">Type: {report.type}</p>
-                                        <p className="text-[10px] text-muted-foreground font-bold uppercase">Generated: {report.date}</p>
-                                        <p className="text-[10px] text-muted-foreground/60">Size: {report.size}</p>
-                                        <div className="flex items-center gap-1.5 mt-2">
-                                            <div className="w-1.5 h-1.5 bg-primary"></div>
-                                            <span className="text-[10px] font-bold text-primary uppercase tracking-widest">Ready</span>
-                                        </div>
-                                    </div>
-                                    <Button variant="ghost" size="icon" className="h-10 w-10 text-muted-foreground hover:text-primary hover:bg-primary/5">
-                                        <Download className="h-5 w-5" />
-                                    </Button>
-                                </div>
-                            ))}
-                            <Button variant="ghost" className="w-full text-xs font-bold text-muted-foreground mt-2">
-                                View All Reports
-                            </Button>
-                        </CardContent>
-                    </Card>
 
                     <Card className="border-none bg-card shadow-sm">
                         <CardHeader>

@@ -17,7 +17,8 @@ import {
     FileText,
     History,
     ClipboardCheck,
-    Stethoscope
+    Stethoscope,
+    Eye
 } from "lucide-react"
 import dayjs from "dayjs"
 import Link from "next/link"
@@ -125,7 +126,7 @@ export default function FollowUpDetailClient({ id }: FollowUpDetailClientProps) 
                         </CardHeader>
                         <CardContent className="space-y-6">
                             <div className="space-y-4">
-                                <Link href={`/user-management/clients/${followUp.clientId}`} className="flex items-center gap-3 text-sm group p-2 -mx-2 hover:bg-muted/50 rounded-lg transition-colors">
+                                <Link href={`/users/clients/${followUp.clientId}`} className="flex items-center gap-3 text-sm group p-2 -mx-2 hover:bg-muted/50 rounded-lg transition-colors">
                                     <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                                         <User className="h-4 w-4 text-primary" />
                                     </div>
@@ -224,8 +225,10 @@ export default function FollowUpDetailClient({ id }: FollowUpDetailClientProps) 
                                             {followUp.triggerScreening?.scoringResult?.interpretation?.replace('_RISK', '') || 'N/A'}
                                         </Badge>
                                     </div>
-                                    <Button variant="ghost" size="sm" asChild className="text-primary hover:text-primary hover:bg-primary/5 font-bold text-xs uppercase">
-                                        <Link href={`/screening/${followUp.triggerScreeningId}`}>View</Link>
+                                    <Button variant="ghost" size="icon" asChild className="h-8 w-8 text-primary hover:text-primary hover:bg-primary/10">
+                                        <Link href={`/screening/${followUp.triggerScreeningId}`}>
+                                            <Eye className="h-4 w-4" />
+                                        </Link>
                                     </Button>
                                 </div>
                             </CardContent>
@@ -248,8 +251,10 @@ export default function FollowUpDetailClient({ id }: FollowUpDetailClientProps) 
                                                 {followUp.referral?.status || 'PENDING'}
                                             </Badge>
                                         </div>
-                                        <Button variant="ghost" size="sm" asChild className="text-primary hover:text-primary hover:bg-primary/5 font-bold text-xs uppercase">
-                                            <Link href={`/referrals/${followUp.referralId}`}>View</Link>
+                                        <Button variant="ghost" size="icon" asChild className="h-8 w-8 text-primary hover:text-primary hover:bg-primary/10">
+                                            <Link href={`/referrals/${followUp.referralId}`}>
+                                                <Eye className="h-4 w-4" />
+                                            </Link>
                                         </Button>
                                     </div>
                                 ) : (

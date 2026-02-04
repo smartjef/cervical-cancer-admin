@@ -319,299 +319,293 @@ export default function ClientDetailClient({ id }: { id: string }) {
 
                         {/* Screenings Tab */}
                         <TabsContent value="screenings">
-                            <Card className="border border-border/50 bg-card shadow-sm">
-                                <DataTable
-                                    columns={[
-                                        {
-                                            header: "Screening ID",
-                                            accessorKey: "id",
-                                            cell: (item: any) => (
-                                                <Link href={`/screening/${item.id}`} className="font-mono text-[10px] font-bold text-primary hover:underline">
-                                                    #{item.id.slice(-6).toUpperCase()}
-                                                </Link>
-                                            ),
-                                            sortable: true,
-                                            className: "pl-6"
-                                        },
-                                        {
-                                            header: "Risk Level",
-                                            accessorKey: "scoringResult.interpretation",
-                                            cell: (item: any) => (
-                                                <Badge variant="outline" className={`
+                            <DataTable
+                                columns={[
+                                    {
+                                        header: "Screening ID",
+                                        accessorKey: "id",
+                                        cell: (item: any) => (
+                                            <Link href={`/screening/${item.id}`} className="font-mono text-[10px] font-bold text-primary hover:underline">
+                                                #{item.id.slice(-6).toUpperCase()}
+                                            </Link>
+                                        ),
+                                        sortable: true,
+                                        className: "pl-6"
+                                    },
+                                    {
+                                        header: "Risk Level",
+                                        accessorKey: "scoringResult.interpretation",
+                                        cell: (item: any) => (
+                                            <Badge variant="outline" className={`
                                                     font-bold border-none px-2.5 py-0.5 rounded-full text-[10px] uppercase tracking-wider
                                                     ${item.scoringResult?.interpretation?.includes('HIGH') ? 'bg-rose-500/10 text-rose-600' :
-                                                        (item.scoringResult?.interpretation?.includes('MEDIUM') || item.scoringResult?.interpretation?.includes('MODERATE')) ? 'bg-amber-500/10 text-amber-600' :
-                                                            'bg-emerald-500/10 text-emerald-600'
-                                                    }
+                                                    (item.scoringResult?.interpretation?.includes('MEDIUM') || item.scoringResult?.interpretation?.includes('MODERATE')) ? 'bg-amber-500/10 text-amber-600' :
+                                                        'bg-emerald-500/10 text-emerald-600'
+                                                }
                                                 `}>
-                                                    {item.scoringResult?.interpretation?.replace('_RISK', '').replace('MODERATE', 'MEDIUM') || 'N/A'}
-                                                </Badge>
-                                            ),
-                                            sortable: true
-                                        },
-                                        {
-                                            header: "Score",
-                                            accessorKey: "scoringResult.aggregateScore",
-                                            cell: (item: any) => <div className="font-bold text-primary text-sm">{item.scoringResult?.aggregateScore || 0}</div>,
-                                            sortable: true
-                                        },
-                                        {
-                                            header: "Date",
-                                            accessorKey: "createdAt",
-                                            cell: (item: any) => <div className="font-medium text-muted-foreground">{dayjs(item.createdAt).format('MMM D, YYYY')}</div>,
-                                            sortable: true,
-                                            className: "text-right pr-6"
-                                        }
-                                    ]}
-                                    data={screeningsData?.results || []}
-                                    isLoading={screeningsLoading}
-                                    totalCount={screeningsData?.totalCount || 0}
-                                    page={screeningsPage}
-                                    setPage={setScreeningsPage}
-                                    limit={screeningsLimit}
-                                    setLimit={setScreeningsLimit}
-                                />
-                            </Card>
+                                                {item.scoringResult?.interpretation?.replace('_RISK', '').replace('MODERATE', 'MEDIUM') || 'N/A'}
+                                            </Badge>
+                                        ),
+                                        sortable: true
+                                    },
+                                    {
+                                        header: "Score",
+                                        accessorKey: "scoringResult.aggregateScore",
+                                        cell: (item: any) => <div className="font-bold text-primary text-sm">{item.scoringResult?.aggregateScore || 0}</div>,
+                                        sortable: true
+                                    },
+                                    {
+                                        header: "Date",
+                                        accessorKey: "createdAt",
+                                        cell: (item: any) => <div className="font-medium text-muted-foreground">{dayjs(item.createdAt).format('MMM D, YYYY')}</div>,
+                                        sortable: true,
+                                        className: "text-right pr-6"
+                                    }
+                                ]}
+                                data={screeningsData?.results || []}
+                                isLoading={screeningsLoading}
+                                totalCount={screeningsData?.totalCount || 0}
+                                page={screeningsPage}
+                                setPage={setScreeningsPage}
+                                limit={screeningsLimit}
+                                setLimit={setScreeningsLimit}
+                            />
                         </TabsContent>
 
                         {/* Referrals Tab */}
                         <TabsContent value="referrals">
-                            <Card className="border border-border/50 bg-card shadow-sm">
-                                <DataTable
-                                    columns={[
-                                        {
-                                            header: "Referral ID",
-                                            accessorKey: "id",
-                                            cell: (item: any) => (
-                                                <div className="flex flex-col">
-                                                    <Link href={`/referrals/${item.id}`} className="font-mono text-[10px] font-bold text-primary hover:underline">
-                                                        #{item.id.slice(-6).toUpperCase()}
-                                                    </Link>
-                                                    <span className="text-[10px] text-muted-foreground">{dayjs(item.createdAt).format('MMM D, YYYY')}</span>
-                                                </div>
-                                            ),
-                                            sortable: true,
-                                            className: "pl-6"
-                                        },
-                                        {
-                                            header: "Screening",
-                                            accessorKey: "screeningId",
-                                            cell: (item: any) => (
-                                                <Link href={`/screening/${item.screeningId}`} className="font-mono text-[10px] font-bold text-primary hover:underline">
-                                                    #{item.screeningId?.slice(-6).toUpperCase() || 'N/A'}
+                            <DataTable
+                                columns={[
+                                    {
+                                        header: "Referral ID",
+                                        accessorKey: "id",
+                                        cell: (item: any) => (
+                                            <div className="flex flex-col">
+                                                <Link href={`/referrals/${item.id}`} className="font-mono text-[10px] font-bold text-primary hover:underline">
+                                                    #{item.id.slice(-6).toUpperCase()}
                                                 </Link>
-                                            ),
-                                            sortable: false
-                                        },
-                                        {
-                                            header: "Health Facility",
-                                            accessorKey: "healthFacility.name",
-                                            cell: (item: any) => (
-                                                <div className="flex flex-col max-w-[200px]">
-                                                    {item.healthFacilityId ? (
-                                                        <Link href={`/facilities/${item.healthFacilityId}`} className="font-bold text-foreground truncate hover:underline">
-                                                            {item.healthFacility?.name || 'N/A'}
-                                                        </Link>
-                                                    ) : (
-                                                        <span className="font-bold text-foreground truncate italic opacity-50">
-                                                            {item.healthFacility?.name || 'N/A'}
-                                                        </span>
-                                                    )}
-                                                    <span className="text-[10px] text-muted-foreground truncate">
-                                                        {item.healthFacility?.ward}, {item.healthFacility?.subcounty}
+                                                <span className="text-[10px] text-muted-foreground">{dayjs(item.createdAt).format('MMM D, YYYY')}</span>
+                                            </div>
+                                        ),
+                                        sortable: true,
+                                        className: "pl-6"
+                                    },
+                                    {
+                                        header: "Screening",
+                                        accessorKey: "screeningId",
+                                        cell: (item: any) => (
+                                            <Link href={`/screening/${item.screeningId}`} className="font-mono text-[10px] font-bold text-primary hover:underline">
+                                                #{item.screeningId?.slice(-6).toUpperCase() || 'N/A'}
+                                            </Link>
+                                        ),
+                                        sortable: false
+                                    },
+                                    {
+                                        header: "Health Facility",
+                                        accessorKey: "healthFacility.name",
+                                        cell: (item: any) => (
+                                            <div className="flex flex-col max-w-[200px]">
+                                                {item.healthFacilityId ? (
+                                                    <Link href={`/facilities/${item.healthFacilityId}`} className="font-bold text-foreground truncate hover:underline">
+                                                        {item.healthFacility?.name || 'N/A'}
+                                                    </Link>
+                                                ) : (
+                                                    <span className="font-bold text-foreground truncate italic opacity-50">
+                                                        {item.healthFacility?.name || 'N/A'}
                                                     </span>
-                                                </div>
-                                            ),
-                                            sortable: false
-                                        },
-                                        {
-                                            header: "Appointment",
-                                            accessorKey: "appointmentTime",
-                                            cell: (item: any) => (
-                                                <div className="flex flex-col">
-                                                    <span className="font-bold text-foreground">{dayjs(item.appointmentTime).format('MMM D, YYYY')}</span>
-                                                    <span className="text-[10px] text-muted-foreground">{dayjs(item.appointmentTime).format('h:mm A')}</span>
-                                                </div>
-                                            ),
-                                            sortable: true
-                                        },
-                                        {
-                                            header: "Status",
-                                            accessorKey: "status",
-                                            cell: (item: any) => (
-                                                <Badge variant="outline" className={`
+                                                )}
+                                                <span className="text-[10px] text-muted-foreground truncate">
+                                                    {item.healthFacility?.ward}, {item.healthFacility?.subcounty}
+                                                </span>
+                                            </div>
+                                        ),
+                                        sortable: false
+                                    },
+                                    {
+                                        header: "Appointment",
+                                        accessorKey: "appointmentTime",
+                                        cell: (item: any) => (
+                                            <div className="flex flex-col">
+                                                <span className="font-bold text-foreground">{dayjs(item.appointmentTime).format('MMM D, YYYY')}</span>
+                                                <span className="text-[10px] text-muted-foreground">{dayjs(item.appointmentTime).format('h:mm A')}</span>
+                                            </div>
+                                        ),
+                                        sortable: true
+                                    },
+                                    {
+                                        header: "Status",
+                                        accessorKey: "status",
+                                        cell: (item: any) => (
+                                            <Badge variant="outline" className={`
                                                     font-bold border-none px-2.5 py-0.5 rounded-full text-[10px] uppercase tracking-wider
                                                     ${item.status === 'COMPLETED' ? 'bg-emerald-500/10 text-emerald-600' :
-                                                        item.status === 'PENDING' ? 'bg-amber-500/10 text-amber-600' :
-                                                            item.status === 'CANCELLED' ? 'bg-rose-500/10 text-rose-600' :
-                                                                'bg-muted text-muted-foreground'
-                                                    }
+                                                    item.status === 'PENDING' ? 'bg-amber-500/10 text-amber-600' :
+                                                        item.status === 'CANCELLED' ? 'bg-rose-500/10 text-rose-600' :
+                                                            'bg-muted text-muted-foreground'
+                                                }
                                                 `}>
-                                                    {item.status || 'N/A'}
-                                                </Badge>
-                                            ),
-                                            sortable: true
-                                        },
-                                        {
-                                            header: "Risk Level",
-                                            accessorKey: "screening.scoringResult.interpretation",
-                                            cell: (item: any) => (
-                                                <Badge variant="outline" className={`
+                                                {item.status || 'N/A'}
+                                            </Badge>
+                                        ),
+                                        sortable: true
+                                    },
+                                    {
+                                        header: "Risk Level",
+                                        accessorKey: "screening.scoringResult.interpretation",
+                                        cell: (item: any) => (
+                                            <Badge variant="outline" className={`
                                                     font-bold border-none px-2.5 py-0.5 rounded-full text-[10px] uppercase tracking-wider
                                                     ${item.screening?.scoringResult?.interpretation?.includes('HIGH') ? 'bg-rose-500/10 text-rose-600' :
-                                                        (item.screening?.scoringResult?.interpretation?.includes('MEDIUM') || item.screening?.scoringResult?.interpretation?.includes('MODERATE')) ? 'bg-amber-500/10 text-amber-600' :
-                                                            'bg-emerald-500/10 text-emerald-600'
-                                                    }
+                                                    (item.screening?.scoringResult?.interpretation?.includes('MEDIUM') || item.screening?.scoringResult?.interpretation?.includes('MODERATE')) ? 'bg-amber-500/10 text-amber-600' :
+                                                        'bg-emerald-500/10 text-emerald-600'
+                                                }
                                                 `}>
-                                                    {item.screening?.scoringResult?.interpretation?.replace('_RISK', '').replace('MODERATE', 'MEDIUM') || 'N/A'}
-                                                </Badge>
-                                            ),
-                                            sortable: false
-                                        },
-                                        {
-                                            header: "Support",
-                                            accessorKey: "transportNeeded",
-                                            cell: (item: any) => (
-                                                <div className="flex flex-col gap-1">
-                                                    {item.transportNeeded && (
-                                                        <Badge variant="outline" className="bg-blue-50 text-blue-600 border-blue-100 text-[9px] w-fit">
-                                                            Transport
-                                                        </Badge>
-                                                    )}
-                                                    {item.financialSupport && (
-                                                        <Badge variant="outline" className="bg-purple-50 text-purple-600 border-purple-100 text-[9px] w-fit">
-                                                            Financial
-                                                        </Badge>
-                                                    )}
-                                                    {!item.transportNeeded && !item.financialSupport && (
-                                                        <span className="text-[10px] text-muted-foreground">None</span>
-                                                    )}
-                                                </div>
-                                            ),
-                                            sortable: false,
-                                            className: "text-right pr-6"
-                                        }
-                                    ]}
-                                    data={referralsData?.results || []}
-                                    isLoading={referralsLoading}
-                                    totalCount={referralsData?.totalCount || 0}
-                                    page={referralsPage}
-                                    setPage={setReferralsPage}
-                                    limit={referralsLimit}
-                                    setLimit={setReferralsLimit}
-                                />
-                            </Card>
+                                                {item.screening?.scoringResult?.interpretation?.replace('_RISK', '').replace('MODERATE', 'MEDIUM') || 'N/A'}
+                                            </Badge>
+                                        ),
+                                        sortable: false
+                                    },
+                                    {
+                                        header: "Support",
+                                        accessorKey: "transportNeeded",
+                                        cell: (item: any) => (
+                                            <div className="flex flex-col gap-1">
+                                                {item.transportNeeded && (
+                                                    <Badge variant="outline" className="bg-blue-50 text-blue-600 border-blue-100 text-[9px] w-fit">
+                                                        Transport
+                                                    </Badge>
+                                                )}
+                                                {item.financialSupport && (
+                                                    <Badge variant="outline" className="bg-purple-50 text-purple-600 border-purple-100 text-[9px] w-fit">
+                                                        Financial
+                                                    </Badge>
+                                                )}
+                                                {!item.transportNeeded && !item.financialSupport && (
+                                                    <span className="text-[10px] text-muted-foreground">None</span>
+                                                )}
+                                            </div>
+                                        ),
+                                        sortable: false,
+                                        className: "text-right pr-6"
+                                    }
+                                ]}
+                                data={referralsData?.results || []}
+                                isLoading={referralsLoading}
+                                totalCount={referralsData?.totalCount || 0}
+                                page={referralsPage}
+                                setPage={setReferralsPage}
+                                limit={referralsLimit}
+                                setLimit={setReferralsLimit}
+                            />
                         </TabsContent>
 
                         {/* Follow-ups Tab */}
                         <TabsContent value="followups">
-                            <Card className="border border-border/50 bg-card shadow-sm">
-                                <DataTable
-                                    columns={[
-                                        {
-                                            header: "Follow-up ID",
-                                            accessorKey: "id",
-                                            cell: (item: any) => (
-                                                <div className="flex flex-col">
-                                                    <Link href={`/follow-ups/${item.id}`} className="font-mono text-[10px] font-bold text-primary hover:underline">
-                                                        #{item.id.slice(-6).toUpperCase()}
-                                                    </Link>
-                                                    <span className="text-[10px] text-muted-foreground">{dayjs(item.createdAt).format('MMM D, YYYY')}</span>
-                                                </div>
-                                            ),
-                                            sortable: true,
-                                            className: "pl-6"
-                                        },
-                                        {
-                                            header: "Category",
-                                            accessorKey: "category",
-                                            cell: (item: any) => (
-                                                <div className="flex flex-col">
-                                                    <span className="font-bold text-foreground text-xs">{item.category?.replace('_', ' ') || 'N/A'}</span>
-                                                    <Badge variant="outline" className={`
+                            <DataTable
+                                columns={[
+                                    {
+                                        header: "Follow-up ID",
+                                        accessorKey: "id",
+                                        cell: (item: any) => (
+                                            <div className="flex flex-col">
+                                                <Link href={`/follow-ups/${item.id}`} className="font-mono text-[10px] font-bold text-primary hover:underline">
+                                                    #{item.id.slice(-6).toUpperCase()}
+                                                </Link>
+                                                <span className="text-[10px] text-muted-foreground">{dayjs(item.createdAt).format('MMM D, YYYY')}</span>
+                                            </div>
+                                        ),
+                                        sortable: true,
+                                        className: "pl-6"
+                                    },
+                                    {
+                                        header: "Category",
+                                        accessorKey: "category",
+                                        cell: (item: any) => (
+                                            <div className="flex flex-col">
+                                                <span className="font-bold text-foreground text-xs">{item.category?.replace('_', ' ') || 'N/A'}</span>
+                                                <Badge variant="outline" className={`
                                                         font-bold border-none px-2 py-0.5 rounded-full text-[9px] uppercase tracking-wider w-fit mt-1
                                                         ${item.priority === 'HIGH' ? 'bg-rose-500/10 text-rose-600' :
-                                                            item.priority === 'MEDIUM' ? 'bg-amber-500/10 text-amber-600' :
-                                                                'bg-blue-500/10 text-blue-600'
-                                                        }
+                                                        item.priority === 'MEDIUM' ? 'bg-amber-500/10 text-amber-600' :
+                                                            'bg-blue-500/10 text-blue-600'
+                                                    }
                                                     `}>
-                                                        {item.priority || 'N/A'}
-                                                    </Badge>
-                                                </div>
-                                            ),
-                                            sortable: true
-                                        },
-                                        {
-                                            header: "Trigger Screening",
-                                            accessorKey: "triggerScreeningId",
-                                            cell: (item: any) => (
-                                                <div className="flex flex-col">
-                                                    <Link href={`/screening/${item.triggerScreeningId}`} className="font-mono text-[10px] font-bold text-primary hover:underline">
-                                                        #{item.triggerScreeningId?.slice(-6).toUpperCase() || 'N/A'}
-                                                    </Link>
-                                                    {item.triggerScreening?.scoringResult && (
-                                                        <Badge variant="outline" className={`
+                                                    {item.priority || 'N/A'}
+                                                </Badge>
+                                            </div>
+                                        ),
+                                        sortable: true
+                                    },
+                                    {
+                                        header: "Trigger Screening",
+                                        accessorKey: "triggerScreeningId",
+                                        cell: (item: any) => (
+                                            <div className="flex flex-col">
+                                                <Link href={`/screening/${item.triggerScreeningId}`} className="font-mono text-[10px] font-bold text-primary hover:underline">
+                                                    #{item.triggerScreeningId?.slice(-6).toUpperCase() || 'N/A'}
+                                                </Link>
+                                                {item.triggerScreening?.scoringResult && (
+                                                    <Badge variant="outline" className={`
                                                             font-bold border-none px-2 py-0.5 rounded-full text-[9px] uppercase tracking-wider w-fit mt-1
                                                             ${item.triggerScreening.scoringResult.interpretation?.includes('HIGH') ? 'bg-rose-500/10 text-rose-600' :
-                                                                item.triggerScreening.scoringResult.interpretation?.includes('MEDIUM') ? 'bg-amber-500/10 text-amber-600' :
-                                                                    'bg-emerald-500/10 text-emerald-600'
-                                                            }
+                                                            item.triggerScreening.scoringResult.interpretation?.includes('MEDIUM') ? 'bg-amber-500/10 text-amber-600' :
+                                                                'bg-emerald-500/10 text-emerald-600'
+                                                        }
                                                         `}>
-                                                            {item.triggerScreening.scoringResult.interpretation?.replace('_RISK', '').replace('MODERATE', 'MEDIUM')}
-                                                        </Badge>
-                                                    )}
-                                                </div>
-                                            ),
-                                            sortable: false
-                                        },
-                                        {
-                                            header: "Referral",
-                                            accessorKey: "referralId",
-                                            cell: (item: any) => (
-                                                item.referralId ? (
-                                                    <Link href={`/referrals/${item.referralId}`} className="font-mono text-[10px] font-bold text-primary hover:underline">
-                                                        #{item.referralId.slice(-6).toUpperCase()}
-                                                    </Link>
+                                                        {item.triggerScreening.scoringResult.interpretation?.replace('_RISK', '').replace('MODERATE', 'MEDIUM')}
+                                                    </Badge>
+                                                )}
+                                            </div>
+                                        ),
+                                        sortable: false
+                                    },
+                                    {
+                                        header: "Referral",
+                                        accessorKey: "referralId",
+                                        cell: (item: any) => (
+                                            item.referralId ? (
+                                                <Link href={`/referrals/${item.referralId}`} className="font-mono text-[10px] font-bold text-primary hover:underline">
+                                                    #{item.referralId.slice(-6).toUpperCase()}
+                                                </Link>
+                                            ) : (
+                                                <span className="text-[10px] text-muted-foreground">N/A</span>
+                                            )
+                                        ),
+                                        sortable: false
+                                    },
+                                    {
+                                        header: "Due Date",
+                                        accessorKey: "dueDate",
+                                        cell: (item: any) => (
+                                            <div className="flex flex-col">
+                                                <span className="font-bold text-foreground text-xs">{dayjs(item.dueDate).format('MMM D, YYYY')}</span>
+                                                {item.completedAt ? (
+                                                    <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-none text-[9px] w-fit mt-1">
+                                                        Completed {dayjs(item.completedAt).format('MMM D')}
+                                                    </Badge>
+                                                ) : dayjs(item.dueDate).isBefore(dayjs()) ? (
+                                                    <Badge variant="outline" className="bg-rose-500/10 text-rose-600 border-none text-[9px] w-fit mt-1">
+                                                        Overdue
+                                                    </Badge>
                                                 ) : (
-                                                    <span className="text-[10px] text-muted-foreground">N/A</span>
-                                                )
-                                            ),
-                                            sortable: false
-                                        },
-                                        {
-                                            header: "Due Date",
-                                            accessorKey: "dueDate",
-                                            cell: (item: any) => (
-                                                <div className="flex flex-col">
-                                                    <span className="font-bold text-foreground text-xs">{dayjs(item.dueDate).format('MMM D, YYYY')}</span>
-                                                    {item.completedAt ? (
-                                                        <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-none text-[9px] w-fit mt-1">
-                                                            Completed {dayjs(item.completedAt).format('MMM D')}
-                                                        </Badge>
-                                                    ) : dayjs(item.dueDate).isBefore(dayjs()) ? (
-                                                        <Badge variant="outline" className="bg-rose-500/10 text-rose-600 border-none text-[9px] w-fit mt-1">
-                                                            Overdue
-                                                        </Badge>
-                                                    ) : (
-                                                        <span className="text-[10px] text-muted-foreground mt-1">
-                                                            {dayjs(item.dueDate).fromNow()}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            ),
-                                            sortable: true,
-                                            className: "text-right pr-6"
-                                        }
-                                    ]}
-                                    data={followupsData?.results || []}
-                                    isLoading={followupsLoading}
-                                    totalCount={followupsData?.totalCount || 0}
-                                    page={followupsPage}
-                                    setPage={setFollowupsPage}
-                                    limit={followupsLimit}
-                                    setLimit={setFollowupsLimit}
-                                />
-                            </Card>
+                                                    <span className="text-[10px] text-muted-foreground mt-1">
+                                                        {dayjs(item.dueDate).fromNow()}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        ),
+                                        sortable: true,
+                                        className: "text-right pr-6"
+                                    }
+                                ]}
+                                data={followupsData?.results || []}
+                                isLoading={followupsLoading}
+                                totalCount={followupsData?.totalCount || 0}
+                                page={followupsPage}
+                                setPage={setFollowupsPage}
+                                limit={followupsLimit}
+                                setLimit={setFollowupsLimit}
+                            />
                         </TabsContent>
                     </Tabs>
                 </div>

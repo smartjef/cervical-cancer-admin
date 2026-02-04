@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -8,6 +8,7 @@ import { Combobox } from "@/components/combobox"
 import { useApi } from "@/hooks/use-api"
 import { useToast } from "@/hooks/use-toast"
 import { Loader2, MapPin, Building2 } from "lucide-react"
+import { apiRequest } from "@/lib/api"
 
 interface FacilityFormProps {
     initialData?: any
@@ -27,6 +28,7 @@ export default function FacilityForm({ initialData, onSuccess }: FacilityFormPro
         county: initialData?.county || "",
         subcounty: initialData?.subcounty || "",
         ward: initialData?.ward || "",
+        address: initialData?.address || "",
         phoneNumber: initialData?.phoneNumber || "",
         email: initialData?.email || "",
         logo: initialData?.logo || "",
@@ -34,23 +36,77 @@ export default function FacilityForm({ initialData, onSuccess }: FacilityFormPro
         longitude: initialData?.coordinates?.longitude || 0,
     })
 
-    const selectedCounty = formData.county
-    const selectedSubcounty = formData.subcounty
+    // ID Tracking for Hierarchy
+    const [countyId, setCountyId] = useState<string>("")
+    const [subcountyId, setSubcountyId] = useState<string>("")
 
-    // Fetch types and locations
+    // Search states
+    const [countySearch, setCountySearch] = useState("")
+    const [subcountySearch, setSubcountySearch] = useState("")
+    const [wardSearch, setWardSearch] = useState("")
+
+    // Debounced search
+    const [debouncedCountySearch, setDebouncedCountySearch] = useState("")
+    const [debouncedSubcountySearch, setDebouncedSubcountySearch] = useState("")
+    const [debouncedWardSearch, setDebouncedWardSearch] = useState("")
+
+    useEffect(() => {
+        const timer = setTimeout(() => setDebouncedCountySearch(countySearch), 300)
+        return () => clearTimeout(timer)
+    }, [countySearch])
+
+    useEffect(() => {
+        const timer = setTimeout(() => setDebouncedSubcountySearch(subcountySearch), 300)
+        return () => clearTimeout(timer)
+    }, [subcountySearch])
+
+    useEffect(() => {
+        const timer = setTimeout(() => setDebouncedWardSearch(wardSearch), 300)
+        return () => clearTimeout(timer)
+    }, [wardSearch])
+
+    // Fetch types
     const { data: typesData } = useApi<any>("/health-facility-types")
-    const { data: countiesData } = useApi<any>("/health-facilities/counties")
-    const { data: subcountiesData } = useApi<any>(
-        selectedCounty ? `/health-facilities/subcounties?county=${selectedCounty}` : null
+
+    // Fetch Locations (Generic AddressHierarchy API)
+    const { data: countiesData, isLoading: isCountiesLoading } = useApi<any>(
+        `/address-hierarchy?level=1&pageSize=50${debouncedCountySearch ? `&search=${debouncedCountySearch}` : ""}`
     )
-    const { data: wardsData } = useApi<any>(
-        selectedSubcounty ? `/health-facilities/wards?subcounty=${selectedSubcounty}` : null
+    const { data: subcountiesData, isLoading: isSubcountiesLoading } = useApi<any>(
+        countyId ? `/address-hierarchy?level=2&parentId=${countyId}&pageSize=50${debouncedSubcountySearch ? `&search=${debouncedSubcountySearch}` : ""}` : null
+    )
+    const { data: wardsData, isLoading: isWardsLoading } = useApi<any>(
+        subcountyId ? `/address-hierarchy?level=3&parentId=${subcountyId}&pageSize=100${debouncedWardSearch ? `&search=${debouncedWardSearch}` : ""}` : null
     )
 
     const typeOptions = useMemo(() => typesData?.results?.map((t: any) => ({ label: t.name, value: t.id })) || [], [typesData])
-    const countyOptions = useMemo(() => countiesData || [], [countiesData])
-    const subcountyOptions = useMemo(() => subcountiesData || [], [subcountiesData])
-    const wardOptions = useMemo(() => wardsData || [], [wardsData])
+
+    const countyOptions = useMemo(() =>
+        countiesData?.results?.map((c: any) => ({ label: c.name, value: c.id })) || [],
+        [countiesData])
+
+    const subcountyOptions = useMemo(() =>
+        subcountiesData?.results?.map((s: any) => ({ label: s.name, value: s.id })) || [],
+        [subcountiesData])
+
+    const wardOptions = useMemo(() =>
+        wardsData?.results?.map((w: any) => ({ label: w.name, value: w.name })) || [],
+        [wardsData]) // Wards use name as value directly for submission
+
+    // Initialization of IDs for editing
+    useEffect(() => {
+        if (initialData?.county && countiesData?.results) {
+            const county = countiesData.results.find((c: any) => c.name === initialData.county)
+            if (county) setCountyId(county.id)
+        }
+    }, [initialData, countiesData])
+
+    useEffect(() => {
+        if (initialData?.subcounty && subcountiesData?.results) {
+            const sub = subcountiesData.results.find((s: any) => s.name === initialData.subcounty)
+            if (sub) setSubcountyId(sub.id)
+        }
+    }, [initialData, subcountiesData])
 
     const validate = () => {
         const newErrors: Record<string, string> = {}
@@ -59,6 +115,9 @@ export default function FacilityForm({ initialData, onSuccess }: FacilityFormPro
         if (!formData.typeId) newErrors.typeId = "Facility Type is required"
         if (!formData.county) newErrors.county = "County is required"
         if (!formData.subcounty) newErrors.subcounty = "Subcounty is required"
+        if (!formData.address) newErrors.address = "Street Address is required"
+        if (!formData.phoneNumber) newErrors.phoneNumber = "Phone Number is required"
+        if (!formData.email) newErrors.email = "Email Address is required"
 
         if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
             newErrors.email = "Invalid email address"
@@ -88,22 +147,14 @@ export default function FacilityForm({ initialData, onSuccess }: FacilityFormPro
             const { latitude, longitude, ...finalPayload } = payload as any
 
             const method = initialData ? "PUT" : "POST"
-            const url = initialData
-                ? `${process.env.NEXT_PUBLIC_API_URL}/health-facilities/${initialData.id}`
-                : `${process.env.NEXT_PUBLIC_API_URL}/health-facilities`
+            const path = initialData
+                ? `/health-facilities/${initialData.id}`
+                : `/health-facilities`
 
-            const response = await fetch(url, {
+            await apiRequest(path, {
                 method,
-                headers: {
-                    "Content-Type": "application/json",
-                },
                 body: JSON.stringify(finalPayload),
             })
-
-            if (!response.ok) {
-                const err = await response.json()
-                throw new Error(err.message || "Failed to save facility")
-            }
 
             toast({
                 title: initialData ? "Facility Updated" : "Facility Registered",
@@ -194,12 +245,17 @@ export default function FacilityForm({ initialData, onSuccess }: FacilityFormPro
                     </Label>
                     <Combobox
                         options={countyOptions}
-                        value={formData.county}
+                        value={countyId}
                         onValueChange={val => {
-                            handleChange("county", val)
+                            setCountyId(val)
+                            const name = countyOptions.find((o: any) => o.value === val)?.label || ""
+                            handleChange("county", name)
+                            setSubcountyId("")
                             handleChange("subcounty", "")
                             handleChange("ward", "")
                         }}
+                        onSearchChange={setCountySearch}
+                        isLoading={isCountiesLoading}
                         placeholder="Select County"
                         className={cn("h-11 border-2", errors.county && "border-destructive")}
                     />
@@ -211,13 +267,17 @@ export default function FacilityForm({ initialData, onSuccess }: FacilityFormPro
                     </Label>
                     <Combobox
                         options={subcountyOptions}
-                        value={formData.subcounty}
+                        value={subcountyId}
                         onValueChange={val => {
-                            handleChange("subcounty", val)
+                            setSubcountyId(val)
+                            const name = subcountyOptions.find((o: any) => o.value === val)?.label || ""
+                            handleChange("subcounty", name)
                             handleChange("ward", "")
                         }}
+                        onSearchChange={setSubcountySearch}
+                        isLoading={isSubcountiesLoading}
                         placeholder="Select Sub"
-                        disabled={!selectedCounty}
+                        disabled={!countyId}
                         className={cn("h-11 border-2", errors.subcounty && "border-destructive")}
                     />
                     {errors.subcounty && <p className="text-[10px] font-bold text-destructive uppercase tracking-widest">{errors.subcounty}</p>}
@@ -228,25 +288,45 @@ export default function FacilityForm({ initialData, onSuccess }: FacilityFormPro
                         options={wardOptions}
                         value={formData.ward}
                         onValueChange={val => handleChange("ward", val)}
+                        onSearchChange={setWardSearch}
+                        isLoading={isWardsLoading}
                         placeholder="Select Ward"
-                        disabled={!selectedSubcounty}
+                        disabled={!subcountyId}
                         className="h-11 border-2"
                     />
                 </div>
             </div>
 
+            <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                    Street Address <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                    value={formData.address}
+                    onChange={e => handleChange("address", e.target.value)}
+                    className={cn("h-11 border-2 font-bold focus:ring-primary", errors.address && "border-destructive")}
+                    placeholder="e.g. Hospital Road, Near City Plaza"
+                />
+                {errors.address && <p className="text-[10px] font-bold text-destructive uppercase tracking-widest">{errors.address}</p>}
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Phone Number</Label>
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                        Phone Number <span className="text-destructive">*</span>
+                    </Label>
                     <Input
                         value={formData.phoneNumber}
                         onChange={e => handleChange("phoneNumber", e.target.value)}
-                        className="h-11 border-2 font-bold focus:ring-primary"
+                        className={cn("h-11 border-2 font-bold focus:ring-primary", errors.phoneNumber && "border-destructive")}
                         placeholder="+254..."
                     />
+                    {errors.phoneNumber && <p className="text-[10px] font-bold text-destructive uppercase tracking-widest">{errors.phoneNumber}</p>}
                 </div>
                 <div className="space-y-2">
-                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Email Address</Label>
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                        Email Address <span className="text-destructive">*</span>
+                    </Label>
                     <Input
                         value={formData.email}
                         onChange={e => handleChange("email", e.target.value)}
@@ -255,6 +335,16 @@ export default function FacilityForm({ initialData, onSuccess }: FacilityFormPro
                     />
                     {errors.email && <p className="text-[10px] font-bold text-destructive uppercase tracking-widest">{errors.email}</p>}
                 </div>
+            </div>
+
+            <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Logo URL</Label>
+                <Input
+                    value={formData.logo}
+                    onChange={e => handleChange("logo", e.target.value)}
+                    className="h-11 border-2 font-bold focus:ring-primary"
+                    placeholder="https://example.com/logo.png"
+                />
             </div>
 
             <div className="p-6 bg-muted/30 rounded-xl border-2 border-dashed space-y-6">

@@ -123,7 +123,7 @@ export function AppHeader({ title, subtitle }: { title: string; subtitle?: strin
     const initials = user?.name?.split(' ').map(n => n[0]).join('').toUpperCase() || '??'
 
     return (
-        <div className="flex flex-col w-full">
+        <div className="flex flex-col w-full sticky top-0 z-50">
             {mounted && isImpersonating && (
                 <div className="bg-amber-500 py-1.5 px-6 flex items-center justify-between shadow-inner animate-in slide-in-from-top duration-500">
                     <div className="flex items-center gap-3 text-white">
@@ -144,7 +144,7 @@ export function AppHeader({ title, subtitle }: { title: string; subtitle?: strin
                     </Button>
                 </div>
             )}
-            <header className="flex h-16 shrink-0 items-center justify-between px-6 bg-background dark:bg-card shadow-none border-b border-border transition-colors">
+            <header className="flex h-20 shrink-0 items-center justify-between px-6 bg-sidebar/80 backdrop-blur-md shadow-none border-b border-border transition-colors">
                 <div className="flex items-center gap-4">
                     <SidebarTrigger className="text-muted-foreground hover:text-primary transition-colors" />
                 </div>
