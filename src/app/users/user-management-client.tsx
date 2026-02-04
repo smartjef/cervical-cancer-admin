@@ -615,7 +615,7 @@ export default function UserManagementPage() {
                                             <div className="flex items-center gap-4">
                                                 <div className="hidden group-hover:flex items-center gap-2 transition-all">
                                                     {(user.type === 'client' && user.id) || (user.type !== 'client' && user.id) ? (
-                                                        <Link href={user.type === 'client' ? `/user-management/clients/${user.id}` : `/user-management/system-users/${user.id}`}>
+                                                        <Link href={user.type === 'client' ? `/users/clients/${user.id}` : `/users/${user.id}`}>
                                                             <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10">
                                                                 <Eye className="h-4 w-4" />
                                                             </Button>

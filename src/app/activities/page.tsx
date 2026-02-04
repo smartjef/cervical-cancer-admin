@@ -45,7 +45,7 @@ dayjs.extend(relativeTime)
 export default function ActivitiesPage() {
     // --- State for Query Parameters ---
     const [page, setPage] = useState(1)
-    const [limit, setLimit] = useState(15)
+    const [limit, setLimit] = useState(10)
     const [userId, setUserId] = useState("")
     const [action, setAction] = useState("all")
     const [resource, setResource] = useState("all")
@@ -130,7 +130,7 @@ export default function ActivitiesPage() {
         <DashboardShell title="System Activities" subtitle="Full Audit Trail & Logs">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                 <div className="flex items-center gap-4">
-                    <Link href="/user-management">
+                    <Link href="/users">
                         <Button variant="ghost" size="sm" className="gap-2 font-black uppercase tracking-widest text-[10px] h-9">
                             <ArrowLeft className="h-4 w-4" />
                             Back
@@ -279,7 +279,7 @@ export default function ActivitiesPage() {
                                                     </div>
                                                     <div className="flex flex-col">
                                                         <Link
-                                                            href={`/user-management/system-users/${activity.userId}`}
+                                                            href={`/users/${activity.userId}`}
                                                             className="text-sm font-black hover:text-primary transition-colors hover:underline underline-offset-2"
                                                         >
                                                             {activity.user?.name || "System"}
@@ -329,7 +329,7 @@ export default function ActivitiesPage() {
                                                     )}
                                                     {activity.metadata?.clientName && (
                                                         <Link
-                                                            href={`/user-management/clients/${activity.metadata.clientId}`}
+                                                            href={`/users/clients/${activity.metadata.clientId}`}
                                                             className="text-[10px] font-bold text-primary hover:underline flex items-center gap-1 mt-0.5"
                                                         >
                                                             <User className="h-2.5 w-2.5" />
@@ -341,9 +341,9 @@ export default function ActivitiesPage() {
                                             <TableCell className="text-right">
                                                 {activity.resourceId && (
                                                     <Link
-                                                        href={activity.resource === 'screening' ? `/screening-data/${activity.resourceId}` :
-                                                            activity.resource === 'client' ? `/user-management/clients/${activity.resourceId}` :
-                                                                `/user-management/system-users/${activity.userId}`}
+                                                        href={activity.resource === 'screening' ? `/screening/${activity.resourceId}` :
+                                                            activity.resource === 'client' ? `/users/clients/${activity.resourceId}` :
+                                                                `/users/${activity.userId}`}
                                                     >
                                                         <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10">
                                                             <ExternalLink className="h-4 w-4" />

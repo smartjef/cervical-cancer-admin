@@ -30,7 +30,10 @@ interface ComboboxProps {
     emptyText?: string
     value?: string
     onValueChange?: (value: string) => void
+    onSearchChange?: (search: string) => void
+    isLoading?: boolean
     className?: string
+    disabled?: boolean
 }
 
 export function Combobox({
@@ -39,7 +42,10 @@ export function Combobox({
     emptyText = "No option found.",
     value,
     onValueChange,
+    onSearchChange,
+    isLoading,
     className,
+    disabled = false,
 }: ComboboxProps) {
     const [open, setOpen] = React.useState(false)
 
@@ -50,40 +56,55 @@ export function Combobox({
                     variant="outline"
                     role="combobox"
                     aria-expanded={open}
+                    disabled={disabled}
                     className={cn("w-full justify-between border-border bg-card font-bold text-muted-foreground h-11", className)}
                 >
-                    {value
-                        ? options.find((option) => option.value === value)?.label
-                        : placeholder}
+                    <span className="truncate">
+                        {value
+                            ? options.find((option) => option.value === value)?.label
+                            : placeholder}
+                    </span>
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
             </PopoverTrigger>
             <PopoverContent className="w-[--radix-popover-trigger-width] p-0 border-border bg-card shadow-lg">
-                <Command>
-                    <CommandInput placeholder={placeholder} className="h-9" />
+                <Command shouldFilter={!onSearchChange}>
+                    <CommandInput
+                        placeholder={placeholder}
+                        className="h-9"
+                        onValueChange={onSearchChange}
+                    />
                     <CommandList>
-                        <CommandEmpty>{emptyText}</CommandEmpty>
-                        <CommandGroup>
-                            {options.map((option) => (
-                                <CommandItem
-                                    key={option.value}
-                                    value={option.value}
-                                    onSelect={(currentValue) => {
-                                        const selectedOption = options.find(o => o.value.toLowerCase() === currentValue.toLowerCase() || o.label.toLowerCase() === currentValue.toLowerCase());
-                                        onValueChange?.(selectedOption ? selectedOption.value : currentValue)
-                                        setOpen(false)
-                                    }}
-                                >
-                                    <Check
-                                        className={cn(
-                                            "mr-2 h-4 w-4",
-                                            value === option.value ? "opacity-100" : "opacity-0"
-                                        )}
-                                    />
-                                    {option.label}
-                                </CommandItem>
-                            ))}
-                        </CommandGroup>
+                        {isLoading ? (
+                            <div className="p-4 text-center text-xs font-bold text-muted-foreground animate-pulse">
+                                Searching...
+                            </div>
+                        ) : (
+                            <>
+                                <CommandEmpty>{emptyText}</CommandEmpty>
+                                <CommandGroup>
+                                    {options.map((option) => (
+                                        <CommandItem
+                                            key={option.value}
+                                            value={option.value}
+                                            onSelect={(currentValue) => {
+                                                const selectedOption = options.find(o => o.value.toLowerCase() === currentValue.toLowerCase() || o.label.toLowerCase() === currentValue.toLowerCase());
+                                                onValueChange?.(selectedOption ? selectedOption.value : currentValue)
+                                                setOpen(false)
+                                            }}
+                                        >
+                                            <Check
+                                                className={cn(
+                                                    "mr-2 h-4 w-4",
+                                                    value === option.value ? "opacity-100" : "opacity-0"
+                                                )}
+                                            />
+                                            {option.label}
+                                        </CommandItem>
+                                    ))}
+                                </CommandGroup>
+                            </>
+                        )}
                     </CommandList>
                 </Command>
             </PopoverContent>

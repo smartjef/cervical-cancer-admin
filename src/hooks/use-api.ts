@@ -7,7 +7,7 @@ export function useApi<T>(path: string | null, options: RequestInit = {}) {
     const [error, setError] = useState<string | null>(null)
 
     const fetchData = useCallback(async () => {
-        if (!path) return
+        if (!path || path.includes("/undefined") || path.endsWith("undefined")) return
         setIsLoading(true)
         setError(null)
         try {

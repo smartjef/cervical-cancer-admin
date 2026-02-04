@@ -39,7 +39,7 @@ export default function ScreeningDetailClient({ id }: { id: string }) {
     return (
         <DashboardShell title="Screening Detail" subtitle={`ID: #${id.slice(-6).toUpperCase()}`}>
             <div className="mb-6">
-                <Link href="/screening-data">
+                <Link href="/screening">
                     <Button variant="ghost" size="sm" className="gap-2">
                         <ArrowLeft className="h-4 w-4" />
                         Back to Screenings
@@ -136,7 +136,7 @@ export default function ScreeningDetailClient({ id }: { id: string }) {
                             <CardTitle className="text-lg font-bold">Client</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <Link href={`/user-management/clients/${screening.client?.id}`} className="flex items-center gap-4 group">
+                            <Link href={`/users/clients/${screening.client?.id}`} className="flex items-center gap-4 group">
                                 <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-colors">
                                     <User className="h-6 w-6" />
                                 </div>
@@ -165,7 +165,7 @@ export default function ScreeningDetailClient({ id }: { id: string }) {
                             <CardTitle className="text-lg font-bold">Provider</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <Link href={`/user-management/system-users/${screening.provider?.userId}`} className="flex items-center gap-4 group">
+                            <Link href={`/users/${screening.provider?.userId}`} className="flex items-center gap-4 group">
                                 <div className="w-12 h-12 rounded-full bg-secondary/10 flex items-center justify-center text-secondary group-hover:bg-secondary group-hover:text-white transition-colors">
                                     <Activity className="h-6 w-6" />
                                 </div>

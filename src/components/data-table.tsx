@@ -46,13 +46,14 @@ interface DataTableProps<T> {
     setPage: (page: number) => void
     limit: number
     setLimit: (limit: number) => void
-    search?: string
-    setSearch?: (search: string) => void
-    searchPlaceholder?: string
     sortBy?: string
     setSortBy?: (key: string) => void
     sortOrder?: "asc" | "desc"
     setSortOrder?: (order: "asc" | "desc") => void
+    controls?: React.ReactNode
+    search?: string
+    setSearch?: (value: string) => void
+    searchPlaceholder?: string
     filters?: React.ReactNode
 }
 
@@ -65,13 +66,14 @@ export function DataTable<T extends { id: string | number }>({
     setPage,
     limit,
     setLimit,
-    search,
-    setSearch,
-    searchPlaceholder = "Search...",
     sortBy,
     setSortBy,
     sortOrder,
     setSortOrder,
+    controls,
+    search,
+    setSearch,
+    searchPlaceholder = "Search...",
     filters
 }: DataTableProps<T>) {
     const totalPages = Math.ceil(totalCount / limit) || 1
@@ -102,27 +104,33 @@ export function DataTable<T extends { id: string | number }>({
             {/* Table Area */}
             <Card className="border-border/40 shadow-sm bg-card overflow-hidden">
                 {/* Header Controls Inside Card */}
-                {(setSearch || filters) && (
-                    <div className="px-6 py-4 bg-muted/20 border-b flex flex-col sm:flex-row items-center justify-between gap-4">
-                        <div className="flex-1 w-full sm:max-w-xs relative">
-                            {setSearch && (
-                                <>
-                                    <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground/50" />
-                                    <Input
-                                        placeholder={searchPlaceholder}
-                                        className="h-10 pl-9 font-medium border-2"
-                                        value={search}
-                                        onChange={(e) => {
-                                            setSearch(e.target.value)
-                                            setPage(1)
-                                        }}
-                                    />
-                                </>
-                            )}
-                        </div>
-                        <div className="flex flex-wrap items-center gap-2">
-                            {filters}
-                        </div>
+                {(controls || setSearch || filters) && (
+                    <div className="px-6 py-4 bg-muted/20 border-b">
+                        {controls ? (
+                            controls
+                        ) : (
+                            <div className="flex flex-col md:flex-row items-center justify-between gap-4 w-full">
+                                {setSearch && (
+                                    <div className="flex-1 w-full md:max-w-md relative">
+                                        <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground/50" />
+                                        <Input
+                                            placeholder={searchPlaceholder}
+                                            className="h-11 pl-9 font-bold border-2 w-full transition-all focus:border-primary/50"
+                                            value={search}
+                                            onChange={(e) => {
+                                                setSearch(e.target.value)
+                                                setPage(1)
+                                            }}
+                                        />
+                                    </div>
+                                )}
+                                {filters && (
+                                    <div className="flex items-center gap-3">
+                                        {filters}
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
                 )}
                 <div className="overflow-x-auto">

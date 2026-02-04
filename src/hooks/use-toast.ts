@@ -1,7 +1,7 @@
 import * as React from "react"
 
 const TOAST_LIMIT = 5
-const TOAST_REMOVE_DELAY = 1000000
+const TOAST_REMOVE_DELAY = 300
 
 type ToasterToast = {
     id: string
@@ -147,8 +147,8 @@ function toast({ ...props }: Omit<ToasterToast, "id">) {
         },
     })
 
-    // Auto dismiss after 5 seconds
-    setTimeout(dismiss, 5000)
+    // Auto dismiss after 3 seconds
+    setTimeout(dismiss, 3000)
 
     return {
         id: id,
@@ -168,7 +168,7 @@ function useToast() {
                 listeners.splice(index, 1)
             }
         }
-    }, [state])
+    }, []) // Empty dependency array - only run once on mount
 
     return {
         ...state,

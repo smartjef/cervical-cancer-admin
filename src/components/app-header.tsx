@@ -1,16 +1,8 @@
 "use client"
 
 import React, { useEffect, useState } from "react"
-import { Search, Bell, Settings, Globe, ChevronRight, Moon, Sun, UserPlus, Loader2, Monitor, XCircle } from "lucide-react"
+import { Search, Settings, Globe, ChevronRight, Moon, Sun, UserPlus, Loader2, Monitor, XCircle, LogOut, User, Activity, ChevronDown } from "lucide-react"
 import { Input } from "@/components/ui/input"
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { SidebarTrigger } from "@/components/ui/sidebar"
@@ -23,6 +15,14 @@ import {
     CommandList,
 } from "@/components/ui/command"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
 import {
     AlertDialog,
@@ -229,60 +229,59 @@ export function AppHeader({ title, subtitle }: { title: string; subtitle?: strin
                         >
                             {mounted && (theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />)}
                         </button>
-                        <div className="relative">
-                            <button className="p-2 hover:bg-muted text-muted-foreground transition-colors">
-                                <Bell className="h-5 w-5" />
-                            </button>
-                            <span className="absolute top-1.5 right-1.5 h-4 w-4 bg-red-500 text-white text-[10px] flex items-center justify-center">
-                                3
-                            </span>
-                        </div>
                     </div>
-                    <div className="flex items-center gap-3 pl-2">
-                        <div className="text-right hidden sm:block">
-                            <p className="text-sm font-semibold text-foreground">{user?.name || "Loading..."}</p>
-                            <p className="text-xs text-muted-foreground capitalize">{(user as any)?.role || "Guest"}</p>
-                        </div>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <button className="outline-none">
-                                    <Avatar className="h-9 w-9 border-none">
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <div className="flex items-center gap-3 pl-2 cursor-pointer group">
+                                <div className="hidden md:flex flex-col items-end text-right">
+                                    <span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors line-clamp-1">
+                                        {user?.name || user?.email?.split('@')[0]}
+                                    </span>
+                                    <span className="text-[10px] font-black uppercase tracking-tighter text-muted-foreground/60 italic">
+                                        {(user as any)?.role || 'User'}
+                                    </span>
+                                </div>
+                                <div className="relative">
+                                    <Avatar className="h-9 w-9 border-none hover:ring-2 hover:ring-primary/20 transition-all shadow-sm">
                                         <AvatarImage src={user?.image || undefined} />
-                                        <AvatarFallback className="bg-primary/10 text-primary">{initials}</AvatarFallback>
+                                        <AvatarFallback className="bg-primary/10 text-primary font-bold">{initials}</AvatarFallback>
                                     </Avatar>
-                                </button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-56 border border-border bg-card shadow-lg">
-                                <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem asChild>
-                                    <Link href="/profile">Profile</Link>
-                                </DropdownMenuItem>
-                                {mounted && isImpersonating && (
-                                    <>
-                                        <DropdownMenuSeparator />
-                                        <DropdownMenuItem
-                                            className="text-amber-600 cursor-pointer font-bold focus:bg-amber-50 dark:focus:bg-amber-950/20"
-                                            onClick={handleStopImpersonation}
-                                        >
-                                            <XCircle className="h-4 w-4 mr-2" />
-                                            Exit Impersonation
-                                        </DropdownMenuItem>
-                                    </>
-                                )}
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem
-                                    className="text-red-600 cursor-pointer font-bold focus:bg-red-50 focus:text-red-600 dark:focus:bg-red-900/20"
-                                    onSelect={(e) => {
-                                        e.preventDefault()
-                                        setShowLogoutDialog(true)
-                                    }}
-                                >
-                                    Logout
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    </div>
+                                    <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 bg-background rounded-full flex items-center justify-center border border-border shadow-sm">
+                                        <ChevronDown className="h-2 w-2 text-muted-foreground" />
+                                    </div>
+                                </div>
+                            </div>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-56 p-1.5 shadow-2xl border-border/50 rounded-xl">
+                            <DropdownMenuLabel className="px-3 py-2">
+                                <div className="flex flex-col gap-0.5">
+                                    <span className="text-sm font-bold truncate">{user?.name}</span>
+                                    <span className="text-[10px] font-medium text-muted-foreground truncate">{user?.email}</span>
+                                </div>
+                            </DropdownMenuLabel>
+                            <DropdownMenuSeparator className="my-1.5 opacity-50" />
+                            <DropdownMenuItem asChild className="rounded-lg h-9 px-3 gap-2 cursor-pointer focus:bg-primary/5 focus:text-primary">
+                                <Link href="/profile" className="flex items-center w-full">
+                                    <User className="h-4 w-4" />
+                                    <span className="text-xs font-bold">View Profile</span>
+                                </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem asChild className="rounded-lg h-9 px-3 gap-2 cursor-pointer focus:bg-primary/5 focus:text-primary">
+                                <Link href="/dashboard" className="flex items-center w-full">
+                                    <Activity className="h-4 w-4" />
+                                    <span className="text-xs font-bold">Dashboard</span>
+                                </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator className="my-1.5 opacity-50" />
+                            <DropdownMenuItem
+                                className="rounded-lg h-9 px-3 gap-2 cursor-pointer text-rose-600 focus:bg-rose-500/5 focus:text-rose-600 font-bold"
+                                onClick={() => setShowLogoutDialog(true)}
+                            >
+                                <LogOut className="h-4 w-4" />
+                                <span className="text-xs">Sign Out</span>
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 </div>
 
                 <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>

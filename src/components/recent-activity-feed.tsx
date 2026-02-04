@@ -81,7 +81,7 @@ export default function RecentActivityFeed({ limit = 7, userId }: RecentActivity
                         <div className="flex-1 min-w-0">
                             <p className="text-sm text-foreground leading-snug">
                                 <Link
-                                    href={`/user-management/system-users/${activity.userId}`}
+                                    href={`/users/${activity.userId}`}
                                     className="font-black hover:text-primary transition-colors"
                                 >
                                     {activity.userName}
@@ -94,7 +94,7 @@ export default function RecentActivityFeed({ limit = 7, userId }: RecentActivity
                                 {activity.resource === 'screening' ? (
                                     <>
                                         <Link
-                                            href={`/screening-data/${activity.resourceId}`}
+                                            href={`/screening/${activity.resourceId}`}
                                             className="font-bold text-primary hover:underline"
                                         >
                                             screening
@@ -112,7 +112,7 @@ export default function RecentActivityFeed({ limit = 7, userId }: RecentActivity
                                     <>
                                         {" for "}
                                         <Link
-                                            href={`/user-management/clients/${activity.clientId}`}
+                                            href={`/users/clients/${activity.clientId}`}
                                             className="font-bold hover:text-primary transition-colors underline decoration-border/50 underline-offset-2"
                                         >
                                             {activity.clientName || "Client"}

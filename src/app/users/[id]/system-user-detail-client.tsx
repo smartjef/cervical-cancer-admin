@@ -52,6 +52,39 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 
+// Helper function to parse user agent
+const parseUserAgent = (userAgent: string) => {
+    if (!userAgent) return "Unknown Device"
+
+    // Extract browser
+    let browser = "Unknown Browser"
+    if (userAgent.includes("Chrome") && !userAgent.includes("Edg")) {
+        browser = "Chrome"
+    } else if (userAgent.includes("Firefox")) {
+        browser = "Firefox"
+    } else if (userAgent.includes("Safari") && !userAgent.includes("Chrome")) {
+        browser = "Safari"
+    } else if (userAgent.includes("Edg")) {
+        browser = "Edge"
+    }
+
+    // Extract OS
+    let os = ""
+    if (userAgent.includes("Windows")) {
+        os = "Windows"
+    } else if (userAgent.includes("Mac OS")) {
+        os = "macOS"
+    } else if (userAgent.includes("Linux")) {
+        os = "Linux"
+    } else if (userAgent.includes("Android")) {
+        os = "Android"
+    } else if (userAgent.includes("iOS")) {
+        os = "iOS"
+    }
+
+    return os ? `${browser} on ${os}` : browser
+}
+
 export default function SystemUserDetailClient({ id }: { id: string }) {
     const router = useRouter()
     const { data: session } = useSession()
@@ -148,10 +181,10 @@ export default function SystemUserDetailClient({ id }: { id: string }) {
                 method: 'POST',
                 body: JSON.stringify({ userId: id })
             })
-                .then((data) => setSessionsData(data))
+                .then((data) => setSessionsData(data?.sessions || []))
                 .catch((error) => {
                     console.error('Failed to fetch sessions:', error)
-                    setSessionsData(null)
+                    setSessionsData([])
                 })
                 .finally(() => setSessionsLoading(false))
         }
@@ -165,7 +198,7 @@ export default function SystemUserDetailClient({ id }: { id: string }) {
                 body: JSON.stringify({ userId: id })
             })
             setIsDeleteDialogOpen(false)
-            router.push('/user-management')
+            router.push('/users')
         } catch (error) {
             console.error("Failed to delete user", error)
             toast({
@@ -233,11 +266,19 @@ export default function SystemUserDetailClient({ id }: { id: string }) {
             })
             return
         }
+        if (passwordForm.password.length < 8) {
+            toast({
+                title: "Validation Error",
+                description: "Password must be at least 8 characters long.",
+                variant: "warning"
+            })
+            return
+        }
         setIsSubmitting(true)
         try {
-            await apiRequest(`/auth/admin/set-password`, {
+            await apiRequest(`/auth/admin/set-user-password`, {
                 method: 'POST',
-                body: JSON.stringify({ userId: id, password: passwordForm.password })
+                body: JSON.stringify({ userId: id, newPassword: passwordForm.password })
             })
             setIsPasswordDialogOpen(false)
             setPasswordForm({ password: '', confirmPassword: '' })
@@ -336,7 +377,7 @@ export default function SystemUserDetailClient({ id }: { id: string }) {
     return (
         <DashboardShell title={`${isChp ? 'CHP' : 'Admin'} Detail`} subtitle={user.name || user.email}>
             <div className="mb-6">
-                <Link href="/user-management">
+                <Link href="/users">
                     <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground hover:text-foreground transition-colors group">
                         <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
                         Back to User Management
@@ -346,76 +387,76 @@ export default function SystemUserDetailClient({ id }: { id: string }) {
 
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                 {/* Left Column: Profile Card */}
-                <div className="lg:col-span-1 space-y-6">
-                    <Card className="border border-border/50 bg-card shadow-sm overflow-hidden flex flex-col items-center p-6 text-center">
-                        <div className="relative mb-4">
-                            <div className="w-24 h-24 rounded-full bg-emerald-50 dark:bg-emerald-950/20 flex items-center justify-center border-4 border-white dark:border-card shadow-md">
-                                <Activity className="h-10 w-10 text-emerald-500" />
+                <div className="lg:col-span-1 space-y-4">
+                    <Card className="border border-border/50 bg-card shadow-sm overflow-hidden flex flex-col items-center p-4 text-center">
+                        <div className="relative mb-3">
+                            <div className="w-20 h-20 rounded-full bg-emerald-50 dark:bg-emerald-950/20 flex items-center justify-center border-4 border-white dark:border-card shadow-md">
+                                <Activity className="h-8 w-8 text-emerald-500" />
                             </div>
-                            <div className="absolute -bottom-1 -right-1 h-6 w-6 bg-emerald-500 rounded-full border-2 border-white dark:border-card flex items-center justify-center">
-                                <div className="h-2 w-2 bg-white rounded-full animate-pulse" />
+                            <div className="absolute -bottom-1 -right-1 h-5 w-5 bg-emerald-500 rounded-full border-2 border-white dark:border-card flex items-center justify-center">
+                                <div className="h-1.5 w-1.5 bg-white rounded-full animate-pulse" />
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-2 mb-1">
-                            <h2 className="text-xl font-bold text-foreground">{user.name || "System User"}</h2>
+                        <div className="flex items-center gap-2 mb-0.5">
+                            <h2 className="text-lg font-bold text-foreground">{user.name || "System User"}</h2>
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-6 w-6 text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-full"
+                                className="h-5 w-5 text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-full"
                                 onClick={() => setIsEditDialogOpen(true)}
                             >
-                                <Edit className="h-3.5 w-3.5" />
+                                <Edit className="h-3 w-3" />
                             </Button>
                         </div>
-                        <Badge variant="outline" className="bg-emerald-50/50 dark:bg-emerald-950/10 text-emerald-600 border-emerald-100 dark:border-emerald-900/30 font-bold px-3 py-0.5 rounded-full text-[10px] uppercase tracking-wider mb-8">
+                        <Badge variant="outline" className="bg-emerald-50/50 dark:bg-emerald-950/10 text-emerald-600 border-emerald-100 dark:border-emerald-900/30 font-bold px-2.5 py-0.5 rounded-full text-[10px] uppercase tracking-wider mb-4">
                             {isChp ? 'Community Health Provider' : 'System Administrator'}
                         </Badge>
 
                         {/* Quick Stats Grid */}
-                        <div className="w-full grid grid-cols-3 gap-2 mb-8 bg-muted/30 p-2 rounded-xl border border-border/50">
-                            <div className="flex flex-col items-center py-2 px-1">
+                        <div className="w-full grid grid-cols-3 gap-2 mb-4 bg-muted/30 p-1.5 rounded-xl border border-border/50">
+                            <div className="flex flex-col items-center py-1.5 px-1">
                                 <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight mb-0.5">Clients</span>
-                                <span className="text-lg font-black text-foreground">{chpInfo?.clients?.length || 12}</span>
+                                <span className="text-base font-black text-foreground">{chpInfo?.clients?.length || 12}</span>
                             </div>
-                            <div className="flex flex-col items-center py-2 px-1 border-x border-border/50">
+                            <div className="flex flex-col items-center py-1.5 px-1 border-x border-border/50">
                                 <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight mb-0.5">Screenings</span>
-                                <span className="text-lg font-black text-foreground">{screenings?.totalCount || screenings?.results?.length || 8}</span>
+                                <span className="text-base font-black text-foreground">{screenings?.totalCount || screenings?.results?.length || 8}</span>
                             </div>
-                            <div className="flex flex-col items-center py-2 px-1">
+                            <div className="flex flex-col items-center py-1.5 px-1">
                                 <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight mb-0.5">Referrals</span>
-                                <span className="text-lg font-black text-foreground">5</span>
+                                <span className="text-base font-black text-foreground">5</span>
                             </div>
                         </div>
 
                         {/* Contact Info */}
-                        <div className="w-full space-y-4 text-left">
-                            <div className="flex items-center gap-3 text-sm text-muted-foreground group cursor-default">
-                                <div className="p-2 rounded-lg bg-muted/50 group-hover:bg-primary/5 group-hover:text-primary transition-colors">
-                                    <Phone className="h-4 w-4" />
+                        <div className="w-full space-y-2 text-left">
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground group cursor-default">
+                                <div className="p-1.5 rounded-lg bg-muted/50 group-hover:bg-primary/5 group-hover:text-primary transition-colors">
+                                    <Phone className="h-3.5 w-3.5" />
                                 </div>
-                                <span className="font-medium">{user.phoneNumber || '+254 700 123 456'}</span>
+                                <span className="font-medium text-xs">{user.phoneNumber || '+254 700 123 456'}</span>
                             </div>
-                            <div className="flex items-center gap-3 text-sm text-muted-foreground group cursor-default">
-                                <div className="p-2 rounded-lg bg-muted/50 group-hover:bg-primary/5 group-hover:text-primary transition-colors">
-                                    <Mail className="h-4 w-4" />
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground group cursor-default">
+                                <div className="p-1.5 rounded-lg bg-muted/50 group-hover:bg-primary/5 group-hover:text-primary transition-colors">
+                                    <Mail className="h-3.5 w-3.5" />
                                 </div>
-                                <span className="font-medium truncate">{user.email}</span>
+                                <span className="font-medium truncate text-xs">{user.email}</span>
                             </div>
-                            <div className="flex items-center gap-3 text-sm text-muted-foreground group cursor-default">
-                                <div className="p-2 rounded-lg bg-muted/50 group-hover:bg-primary/5 group-hover:text-primary transition-colors">
-                                    <Calendar className="h-4 w-4" />
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground group cursor-default">
+                                <div className="p-1.5 rounded-lg bg-muted/50 group-hover:bg-primary/5 group-hover:text-primary transition-colors">
+                                    <Calendar className="h-3.5 w-3.5" />
                                 </div>
-                                <span className="font-medium">Joined {dayjs(user.createdAt).format('MMM D, YYYY')}</span>
+                                <span className="font-medium text-xs">Joined {dayjs(user.createdAt).format('MMM D, YYYY')}</span>
                             </div>
 
-                            <div className="pt-2 flex flex-col gap-2">
+                            <div className="pt-2 flex flex-col gap-1.5">
                                 <Button
                                     variant="outline"
-                                    className="w-full justify-start gap-2 font-bold rounded-xl border-border/60 hover:bg-primary/5 hover:text-primary hover:border-primary/20"
+                                    className="w-full justify-start gap-2 font-bold rounded-xl border-border/60 hover:bg-primary/5 hover:text-primary hover:border-primary/20 h-9 text-xs"
                                     onClick={() => setIsPasswordDialogOpen(true)}
                                 >
-                                    <Key className="h-4 w-4" />
+                                    <Key className="h-3.5 w-3.5" />
                                     Change Password
                                 </Button>
 
@@ -424,18 +465,18 @@ export default function SystemUserDetailClient({ id }: { id: string }) {
                                         <Button
                                             variant="outline"
                                             onClick={() => setIsStatusDialogOpen(true)}
-                                            className="w-full justify-start gap-2 font-bold rounded-xl border-border/60 hover:bg-amber-50 text-amber-700 hover:border-amber-200"
+                                            className="w-full justify-start gap-2 font-bold rounded-xl border-border/60 hover:bg-amber-50 text-amber-700 hover:border-amber-200 h-9 text-xs"
                                         >
-                                            <PauseCircle className="h-4 w-4" />
+                                            <PauseCircle className="h-3.5 w-3.5" />
                                             {user?.banned ? 'Activate Account' : 'Deactivate Account'}
                                         </Button>
 
                                         <Button
                                             variant="outline"
-                                            className="w-full justify-start gap-2 font-bold rounded-xl border-border/60 hover:bg-primary/5 hover:text-primary hover:border-primary/20"
+                                            className="w-full justify-start gap-2 font-bold rounded-xl border-border/60 hover:bg-primary/5 hover:text-primary hover:border-primary/20 h-9 text-xs"
                                             onClick={() => { setPendingRole(user.role === 'admin' ? 'chp' : 'admin'); setIsRoleDialogOpen(true); }}
                                         >
-                                            <ShieldAlert className="h-4 w-4" />
+                                            <ShieldAlert className="h-3.5 w-3.5" />
                                             Update Role
                                         </Button>
 
@@ -465,21 +506,25 @@ export default function SystemUserDetailClient({ id }: { id: string }) {
                                     <span className="font-bold">Activities</span>
                                     <Badge variant="outline" className="bg-emerald-50 text-emerald-600 border-emerald-100 rounded-full px-1.5 py-0 h-4 text-[10px] min-w-[1.25rem] flex justify-center">{activityData?.totalCount || 0}</Badge>
                                 </TabsTrigger>
-                                <TabsTrigger value="referrals" className="data-[state=active]:bg-transparent border-none rounded-none px-0 py-3 h-auto gap-2">
-                                    <ClipboardList className="h-4 w-4 text-primary" />
-                                    <span className="font-bold">Referrals</span>
-                                    <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 rounded-full px-1.5 py-0 h-4 text-[10px] min-w-[1.25rem] flex justify-center">{referralData?.totalCount || 0}</Badge>
-                                </TabsTrigger>
-                                <TabsTrigger value="clients" className="data-[state=active]:bg-transparent border-none rounded-none px-0 py-3 h-auto gap-2">
-                                    <Users className="h-4 w-4 text-secondary" />
-                                    <span className="font-bold">Clients</span>
-                                    <Badge variant="outline" className="bg-secondary/5 text-secondary border-secondary/20 rounded-full px-1.5 py-0 h-4 text-[10px] min-w-[1.25rem] flex justify-center">{clientData?.totalCount || 0}</Badge>
-                                </TabsTrigger>
-                                <TabsTrigger value="followups" className="data-[state=active]:bg-transparent border-none rounded-none px-0 py-3 h-auto gap-2">
-                                    <CheckCircle2 className="h-4 w-4 text-amber-500" />
-                                    <span className="font-bold">Follow-ups</span>
-                                    <Badge variant="outline" className="bg-amber-50 text-amber-600 border-amber-100 rounded-full px-1.5 py-0 h-4 text-[10px] min-w-[1.25rem] flex justify-center">{followUpData?.totalCount || 0}</Badge>
-                                </TabsTrigger>
+                                {chpInfo && (
+                                    <>
+                                        <TabsTrigger value="referrals" className="data-[state=active]:bg-transparent border-none rounded-none px-0 py-3 h-auto gap-2">
+                                            <ClipboardList className="h-4 w-4 text-primary" />
+                                            <span className="font-bold">Referrals</span>
+                                            <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 rounded-full px-1.5 py-0 h-4 text-[10px] min-w-[1.25rem] flex justify-center">{referralData?.totalCount || 0}</Badge>
+                                        </TabsTrigger>
+                                        <TabsTrigger value="clients" className="data-[state=active]:bg-transparent border-none rounded-none px-0 py-3 h-auto gap-2">
+                                            <Users className="h-4 w-4 text-secondary" />
+                                            <span className="font-bold">Clients</span>
+                                            <Badge variant="outline" className="bg-secondary/5 text-secondary border-secondary/20 rounded-full px-1.5 py-0 h-4 text-[10px] min-w-[1.25rem] flex justify-center">{clientData?.totalCount || 0}</Badge>
+                                        </TabsTrigger>
+                                        <TabsTrigger value="followups" className="data-[state=active]:bg-transparent border-none rounded-none px-0 py-3 h-auto gap-2">
+                                            <CheckCircle2 className="h-4 w-4 text-amber-500" />
+                                            <span className="font-bold">Follow-ups</span>
+                                            <Badge variant="outline" className="bg-amber-50 text-amber-600 border-amber-100 rounded-full px-1.5 py-0 h-4 text-[10px] min-w-[1.25rem] flex justify-center">{followUpData?.totalCount || 0}</Badge>
+                                        </TabsTrigger>
+                                    </>
+                                )}
                                 <TabsTrigger value="sessions" className="data-[state=active]:bg-transparent border-none rounded-none px-0 py-3 h-auto gap-2">
                                     <Monitor className="h-4 w-4 text-rose-500" />
                                     <span className="font-bold">Sessions</span>
@@ -549,7 +594,7 @@ export default function SystemUserDetailClient({ id }: { id: string }) {
                                                             )}
                                                             {metadata.clientId && (
                                                                 <Link
-                                                                    href={`/user-management/clients/${metadata.clientId}`}
+                                                                    href={`/users/clients/${metadata.clientId}`}
                                                                     className="text-[10px] font-bold text-primary hover:underline flex items-center gap-1 bg-primary/5 px-2 py-0.5 rounded-md border border-primary/20"
                                                                 >
                                                                     <User className="h-2.5 w-2.5" />
@@ -558,7 +603,7 @@ export default function SystemUserDetailClient({ id }: { id: string }) {
                                                             )}
                                                             {item.resourceId && item.resource === 'screening' && (
                                                                 <Link
-                                                                    href={`/screening-data/${item.resourceId}`}
+                                                                    href={`/screening/${item.resourceId}`}
                                                                     className="text-[10px] font-bold text-emerald-600 hover:underline flex items-center gap-1 bg-emerald-500/5 px-2 py-0.5 rounded-md border border-emerald-500/20"
                                                                 >
                                                                     <FileText className="h-2.5 w-2.5" />
@@ -649,7 +694,7 @@ export default function SystemUserDetailClient({ id }: { id: string }) {
                                     }
                                 />
                             </TabsContent>
-                            <TabsContent value="referrals">
+                            {chpInfo && <TabsContent value="referrals">
                                 <DataTable
                                     columns={[
                                         {
@@ -657,7 +702,7 @@ export default function SystemUserDetailClient({ id }: { id: string }) {
                                             accessorKey: "screening.client.firstName",
                                             cell: (item: any) => (
                                                 <Link
-                                                    href={`/user-management/clients/${item.screening?.clientId}`}
+                                                    href={`/users/clients/${item.screening?.clientId}`}
                                                     className="flex flex-col hover:underline group max-w-[180px]"
                                                 >
                                                     <span className="font-bold text-foreground truncate group-hover:text-primary">
@@ -683,7 +728,7 @@ export default function SystemUserDetailClient({ id }: { id: string }) {
                                                 };
                                                 return (
                                                     <Link
-                                                        href={`/screening-data/${item.screening?.id}`}
+                                                        href={`/screening/${item.screening?.id}`}
                                                         className="flex flex-col gap-1 hover:opacity-80 group"
                                                     >
                                                         <Badge variant="outline" className={`w-fit font-bold rounded-full text-[10px] px-2 py-0 h-5 group-hover:ring-2 ring-primary/20 ${colorMap[interpretation] || "bg-muted text-muted-foreground"}`}>
@@ -763,8 +808,8 @@ export default function SystemUserDetailClient({ id }: { id: string }) {
                                         </Select>
                                     }
                                 />
-                            </TabsContent>
-                            <TabsContent value="clients">
+                            </TabsContent>}
+                            {chpInfo && <TabsContent value="clients">
                                 <DataTable
                                     columns={[
                                         {
@@ -875,8 +920,8 @@ export default function SystemUserDetailClient({ id }: { id: string }) {
                                         </Select>
                                     }
                                 />
-                            </TabsContent>
-                            <TabsContent value="followups">
+                            </TabsContent>}
+                            {chpInfo && <TabsContent value="followups">
                                 <DataTable
                                     columns={[
                                         {
@@ -992,7 +1037,7 @@ export default function SystemUserDetailClient({ id }: { id: string }) {
                                         </>
                                     }
                                 />
-                            </TabsContent>
+                            </TabsContent>}
                             <TabsContent value="sessions">
                                 <DataTable
                                     columns={[
@@ -1001,8 +1046,8 @@ export default function SystemUserDetailClient({ id }: { id: string }) {
                                             accessorKey: "userAgent",
                                             cell: (item: any) => (
                                                 <div className="flex flex-col max-w-[240px]" title={item.userAgent}>
-                                                    <span className="font-bold text-foreground truncate">{item.userAgent?.split(' ')[0] || "Unknown Device"}</span>
-                                                    <span className="text-[10px] text-muted-foreground truncate">{item.userAgent}</span>
+                                                    <span className="font-bold text-foreground truncate">{parseUserAgent(item.userAgent)}</span>
+                                                    <span className="text-[10px] text-muted-foreground truncate">{item.ipAddress || "No IP"} · {dayjs(item.createdAt).fromNow()}</span>
                                                 </div>
                                             ),
                                             sortable: true,

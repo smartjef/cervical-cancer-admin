@@ -8,6 +8,8 @@ import {
     FileText,
     LogOut,
     Activity,
+    Building2,
+    CalendarClock,
 } from "lucide-react"
 
 import {
@@ -20,7 +22,6 @@ import {
     SidebarMenuItem,
     SidebarRail,
 } from "@/components/ui/sidebar"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
@@ -42,13 +43,28 @@ const data = {
             icon: LayoutDashboard,
         },
         {
-            title: "Screening Data",
-            url: "/screening-data",
+            title: "Screening",
+            url: "/screening",
             icon: Activity,
         },
         {
-            title: "User Management",
-            url: "/user-management",
+            title: "Facilities",
+            url: "/facilities",
+            icon: Building2,
+        },
+        {
+            title: "Referrals",
+            url: "/referrals",
+            icon: ClipboardList,
+        },
+        {
+            title: "Follow-ups",
+            url: "/follow-ups",
+            icon: CalendarClock,
+        },
+        {
+            title: "Users",
+            url: "/users",
             icon: Users,
         },
         {
@@ -60,8 +76,6 @@ const data = {
 }
 
 import { signOut, useSession } from "@/lib/auth-client"
-
-import Image from "next/image"
 import { useRouter } from "next/navigation"
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
@@ -76,20 +90,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         router.push("/login")
     }
 
-    const user = session?.user
-    const initials = user?.name?.split(' ').map(n => n[0]).join('').toUpperCase() || '??'
-
     return (
         <Sidebar className="border-r border-border bg-sidebar text-sidebar-foreground" {...props}>
             <SidebarHeader className="h-16 bg-sidebar flex items-center px-6">
                 <div className="flex items-center gap-2">
-                    <div className="relative h-10 w-10 overflow-hidden shadow-sm">
-                        <Image
-                            src="/logo.jpeg"
-                            alt="Pearl Logo"
-                            fill
-                            className="object-cover"
-                        />
+                    <div className="h-10 px-3 bg-teal-500 rounded-lg flex items-center justify-center shadow-sm">
+                        <span className="text-white font-black text-sm tracking-tight">SCREEN-IT</span>
                     </div>
                 </div>
             </SidebarHeader>
@@ -126,18 +132,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             </SidebarContent>
             <SidebarFooter className="p-4 bg-sidebar border-t border-border">
                 <SidebarMenu>
-                    <SidebarMenuItem className="mb-4">
-                        <div className="flex items-center gap-3 px-6 py-2">
-                            <Avatar className="h-9 w-9 border-none">
-                                <AvatarImage src={user?.image || undefined} />
-                                <AvatarFallback className="bg-primary/10 text-primary font-bold">{initials}</AvatarFallback>
-                            </Avatar>
-                            <div className="flex flex-col overflow-hidden">
-                                <span className="text-sm font-bold text-foreground truncate">{user?.name || "Loading..."}</span>
-                                <span className="text-[10px] font-bold text-primary uppercase tracking-widest truncate">{(user as any)?.role || "User"}</span>
-                            </div>
-                        </div>
-                    </SidebarMenuItem>
                     <SidebarMenuItem>
                         <SidebarMenuButton
                             className="hover:bg-destructive/10 hover:text-destructive transition-colors px-6 py-6 rounded-none cursor-pointer group"
