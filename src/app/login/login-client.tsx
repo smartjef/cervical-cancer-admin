@@ -55,8 +55,14 @@ export default function LoginPage() {
                 <div className="w-full md:w-1/2 bg-primary dark:bg-primary/20 p-8 md:p-12 flex flex-col justify-between text-white dark:text-foreground">
                     <div>
                         <div className="flex items-center gap-3 mb-10">
-                            <div className="p-2 bg-white/10 dark:bg-white/5 rounded-lg">
-                                <Shield className="h-8 w-8 text-white dark:text-primary" />
+                            <div className="p-1 bg-white/10 dark:bg-white/5 rounded-lg flex items-center justify-center overflow-hidden shrink-0">
+                                <Image
+                                    src="/logo.jpeg"
+                                    alt="SCREEN-IT Logo"
+                                    width={40}
+                                    height={40}
+                                    className="object-contain"
+                                />
                             </div>
                             <h1 className="text-4xl md:text-5xl font-black text-white/90 tracking-tighter uppercase leading-none mb-2">
                                 SCREEN-IT
@@ -66,7 +72,7 @@ export default function LoginPage() {
                             Cervical Cancer Screening & Management
                         </p>
                         <p className="text-white/80 dark:text-muted-foreground text-lg mb-8 leading-relaxed">
-                            Access our integrated platform for efficient patient management, screening analytics, and real-time reporting.
+                            Access our integrated platform for screening analytics, and real-time reporting.
                         </p>
                     </div>
                 </div>
