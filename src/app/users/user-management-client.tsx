@@ -268,7 +268,7 @@ export default function UserManagementPage() {
     const activities = [] // Placeholder to keep JSX stable if needed, but we'll remove usage
 
     return (
-        <DashboardShell title="User Management" subtitle="Pearl Hospital">
+        <DashboardShell title="User Management" subtitle="SCREEN-IT">
             <div className="flex justify-between items-center mb-6">
                 <div>
                     <h2 className="text-2xl font-bold text-foreground">User Management</h2>

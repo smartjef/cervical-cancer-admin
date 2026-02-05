@@ -126,7 +126,7 @@ export default function DashboardPage() {
     })) || []
 
     return (
-        <DashboardShell title="Analytics Dashboard" subtitle="Pearl Hospital">
+        <DashboardShell title="Analytics Dashboard" subtitle="SCREEN-IT">
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-0 md:gap-6 mb-8 overflow-hidden rounded-2xl border border-border/50 md:border-none md:rounded-none bg-card md:bg-transparent shadow-sm md:shadow-none">
                 {stats.map((stat: any, index: number) => (
                     <div

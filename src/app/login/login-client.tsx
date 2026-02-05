@@ -58,11 +58,13 @@ export default function LoginPage() {
                             <div className="p-2 bg-white/10 dark:bg-white/5 rounded-lg">
                                 <Shield className="h-8 w-8 text-white dark:text-primary" />
                             </div>
-                            <span className="text-2xl font-bold tracking-tight italic">Pearl Hospital</span>
+                            <h1 className="text-4xl md:text-5xl font-black text-white/90 tracking-tighter uppercase leading-none mb-2">
+                                SCREEN-IT
+                            </h1>
                         </div>
-                        <h1 className="text-3xl md:text-4xl font-bold mb-6 leading-tight text-white dark:text-foreground">
-                            Advanced Cervical Cancer Screening System
-                        </h1>
+                        <p className="text-white/60 text-xs md:text-sm font-bold uppercase tracking-widest max-w-[280px]">
+                            Cervical Cancer Screening & Management
+                        </p>
                         <p className="text-white/80 dark:text-muted-foreground text-lg mb-8 leading-relaxed">
                             Access our integrated platform for efficient patient management, screening analytics, and real-time reporting.
                         </p>
@@ -99,7 +101,7 @@ export default function LoginPage() {
                             </label>
                             <Input
                                 type="email"
-                                placeholder="name@pearl.com"
+                                placeholder="name@screen-it.com"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 className="h-12 bg-muted/50 border-none focus-visible:ring-primary text-foreground"
@@ -142,7 +144,7 @@ export default function LoginPage() {
 
                     <div className="mt-12 pt-8 border-t border-border flex items-center justify-between">
                         <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                            © 2026 Pearl Hospital
+                            © {new Date().getFullYear()} SCREEN-IT
                         </div>
                         <div className="flex gap-4">
                             <Shield className="h-4 w-4 text-muted-foreground/30" />

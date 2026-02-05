@@ -10,12 +10,14 @@ const ibmPlexSans = IBM_Plex_Sans({
 
 export const metadata: Metadata = {
   title: {
-    template: "%s | Pearl Hospital",
-    default: "Pearl Hospital - Cervical Cancer Screening",
+    template: "%s | SCREEN-IT",
+    default: "SCREEN-IT - Cervical Cancer Screening",
   },
   description: "Advanced Cervical Cancer Screening and Management System",
   icons: {
     icon: "/logo.jpeg",
+    shortcut: "/logo.jpeg",
+    apple: "/logo.jpeg",
   },
   robots: {
     index: false,

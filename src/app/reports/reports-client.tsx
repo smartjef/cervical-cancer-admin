@@ -1,8 +1,10 @@
 "use client"
 
+import React, { useMemo, useState } from "react"
 import DashboardShell from "@/components/dashboard-shell"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Loader2 } from "lucide-react"
 import {
     Select,
     SelectContent,
@@ -23,9 +25,13 @@ import {
     TrendingUp,
     Target
 } from "lucide-react"
-import { useMemo } from "react"
 import { useApi } from "@/hooks/use-api"
+import { useToast } from "@/hooks/use-toast"
+import { apiRequest } from "@/lib/api"
+import { exportToCSV } from "@/lib/export-utils"
 import StatisticsCards from "@/components/statistics-cards"
+import { cn } from "@/lib/utils"
+import dayjs from "dayjs"
 import {
     LineChart,
     Line,
@@ -37,41 +43,247 @@ import {
     AreaChart,
     Area
 } from 'recharts'
+import jsPDF from "jspdf"
+import autoTable from "jspdf-autotable"
 
 const reportTypes = [
     {
+        id: "screening_summary",
         title: "Screening Summary Report",
         desc: "Comprehensive overview of all screening activities",
         icon: Activity,
-        schedule: "Monthly",
-        lastGenerated: "2025-01-28"
     },
     {
+        id: "chp_performance",
         title: "CHP Performance Report",
         desc: "Individual and comparative CHP performance metrics",
         icon: Users,
-        schedule: "Monthly",
-        lastGenerated: "2025-01-27"
     },
     {
-        title: "Risk Stratification Analysis",
-        desc: "AI risk assessment patterns and outcomes",
-        icon: PieChart,
-        schedule: "Monthly",
-        lastGenerated: "2025-01-25"
+        id: "client_report",
+        title: "Client Report",
+        desc: "Detailed demographic and registration data for all clients",
+        icon: Users,
     },
     {
-        title: "Compliance & Quality Report",
-        desc: "Regulatory compliance and quality assurance metrics",
+        id: "compliance_quality",
+        title: "Referral Report",
+        desc: "Track referral status and appointment adherence",
         icon: ShieldCheck,
-        schedule: "Monthly",
-        lastGenerated: "2025-01-20"
     }
 ]
 
 
 export default function ReportsPage() {
-    const { data: dashboardData, isLoading } = useApi<any>("/admin/dashboard/summary")
+    const [selectedType, setSelectedType] = useState("screening_summary")
+    const [isGenerating, setIsGenerating] = useState(false)
+    const [dateRange, setDateRange] = useState("7")
+    const [format, setFormat] = useState("pdf") // pdf, excel, csv
+    const { toast } = useToast()
+    const { data: dashboardData, isLoading: isDashboardLoading } = useApi<any>("/admin/dashboard/summary")
+
+    const handleGenerateReport = async () => {
+        setIsGenerating(true)
+        try {
+            let endpoint = ""
+            let filename = ""
+            let columns: { key: string; label: string }[] = []
+
+            const dateTo = dayjs().toISOString()
+            const dateFrom = dayjs().subtract(parseInt(dateRange), 'day').toISOString()
+            const queryParams = `?screeningDateFrom=${dateFrom}&screeningDateTo=${dateTo}&limit=1000`
+
+            switch (selectedType) {
+                case "screening_summary":
+                    endpoint = `/screenings${queryParams}`
+                    filename = `screening-summary-${dayjs().format("YYYY-MM-DD")}`
+                    columns = [
+                        { key: format === 'pdf' ? "idShort" : "id", label: "SCREENING ID" },
+                        { key: "clientName", label: "CLIENT NAME" },
+                        { key: "providerName", label: "PROVIDER" },
+                        { key: "location", label: "LOCATION" },
+                        { key: "riskLevel", label: "RISK LEVEL" },
+                        { key: "score", label: "SCORE" },
+                        { key: "age", label: "AGE" },
+                        { key: "createdAt", label: "DATE" }
+                    ]
+                    break
+                case "client_report":
+                    endpoint = `/clients${queryParams}`
+                    filename = `client-database-${dayjs().format("YYYY-MM-DD")}`
+                    columns = [
+                        { key: "fullName", label: "Name" },
+                        { key: "phoneNumber", label: "Phone" },
+                        { key: "nationalId", label: "National ID" },
+                        { key: "locationInfo", label: "Location" },
+                        { key: "createdAt", label: "Registration Date" }
+                    ]
+                    break
+                case "chp_performance":
+                    endpoint = `/admin/dashboard/chp-performance${queryParams}`
+                    filename = `chp-performance-${dayjs().format("YYYY-MM-DD")}`
+                    columns = [
+                        { key: "name", label: "Name" },
+                        { key: "email", label: "Email" },
+                        { key: "totalClients", label: "Total Clients" },
+                        { key: "totalScreening", label: "Total Screenings" },
+                        { key: "followUpRate", label: "Follow-up Rate" },
+                        { key: "overallPerformance", label: "Overall Perf." }
+                    ]
+                    break
+                case "compliance_quality":
+                    endpoint = `/referrals${queryParams}`
+                    filename = `referral-report-${dayjs().format("YYYY-MM-DD")}`
+                    columns = [
+                        { key: format === 'pdf' ? "idShort" : "id", label: "ID" },
+                        { key: "clientName", label: "Client" },
+                        { key: "healthFacility.name", label: "Facility" },
+                        { key: "appointmentTime", label: "Appt Date" },
+                        { key: "status", label: "Status" },
+                        { key: "riskInfo", label: "Risk (Score, Lv)" }
+                    ]
+                    break
+                default:
+                    toast({ title: "Coming Soon", description: "This report type is currently under development.", variant: "default" })
+                    setIsGenerating(false)
+                    return
+            }
+
+            const response = await apiRequest(endpoint)
+            const data = response.results || response || []
+            const finalDataRaw = Array.isArray(data) ? data : (data.results || [])
+
+            if (finalDataRaw.length === 0) {
+                toast({ title: "No Data", description: "No records found for the selected criteria.", variant: "destructive" })
+                return
+            }
+
+            // Data Transformation
+            const finalData = finalDataRaw.map((item: any) => {
+                const mapped: any = { ...item }
+
+                if (selectedType === "compliance_quality") {
+                    mapped.idShort = (item.id || '').substring(0, 5).toUpperCase()
+                    mapped.clientName = item.screening?.client ? `${item.screening.client.firstName} ${item.screening.client.lastName}` : 'N/A'
+                    const res = item.screening?.scoringResult || {}
+                    mapped.riskInfo = `${res.score || 0} (${res.interpretation || 'N/A'})`
+                    mapped.appointmentTime = item.appointmentTime ? dayjs(item.appointmentTime).format("YYYY-MM-DD HH:mm") : 'N/A'
+                }
+
+                if (selectedType === "client_report") {
+                    mapped.fullName = `${item.firstName} ${item.lastName}`
+                    mapped.locationInfo = `${item.county}, ${item.subcounty}`
+                    mapped.createdAt = dayjs(item.createdAt).format("YYYY-MM-DD")
+                }
+
+                if (selectedType === "screening_summary") {
+                    mapped.idShort = (item.id || '').substring(0, 5).toUpperCase()
+                    mapped.clientName = item.client ? `${item.client.firstName} ${item.client.lastName}` : 'N/A'
+                    mapped.providerName = item.provider ? `${item.provider.firstName} ${item.provider.lastName}` : 'N/A'
+                    mapped.location = item.client ? `${item.client.subcounty}` : 'N/A'
+                    mapped.riskLevel = item.scoringResult?.interpretation || 'N/A'
+                    mapped.score = item.scoringResult?.aggregateScore || 0
+                    mapped.age = item.scoringResult?.clientAge || 'N/A'
+                    mapped.createdAt = dayjs(item.createdAt).format("MMM D, YYYY")
+                }
+
+                return mapped
+            })
+
+            if (format === "csv" || format === "excel") {
+                exportToCSV(finalData, filename, columns)
+            } else if (format === "pdf") {
+                const doc = new jsPDF()
+
+                // Professional Header Setup
+                const addHeader = (doc: jsPDF) => {
+                    doc.setFillColor(248, 250, 252) // slate-50
+                    doc.rect(0, 0, 210, 40, 'F')
+
+                    // Logo integration
+                    try {
+                        doc.addImage('/logo.jpeg', 'JPEG', 14, 8, 24, 24)
+                    } catch (e) {
+                        console.error("Logo failed to load", e)
+                    }
+
+                    doc.setFontSize(24)
+                    doc.setTextColor(0, 150, 160) // Primary color
+                    doc.setFont("helvetica", "bold")
+                    doc.text("SCREEN-IT", 42, 22)
+
+                    doc.setFontSize(10)
+                    doc.setTextColor(100, 116, 139) // slate-500
+                    doc.setFont("helvetica", "normal")
+                    doc.text("CERVICAL CANCER SCREENING PROGRAM", 42, 28)
+
+                    doc.setTextColor(30, 41, 59) // slate-800
+                    doc.setFont("helvetica", "bold")
+                    doc.text(filename.replace(/-/g, ' ').toUpperCase(), 14, 38)
+
+                    // Generation Metadata
+                    doc.setFontSize(8)
+                    doc.setFont("helvetica", "normal")
+                    doc.text(`DATE GENERATED: ${dayjs().format("YYYY-MM-DD HH:mm")}`, 150, 15)
+                    doc.text(`REPORT PERIOD: LAST ${dateRange} DAYS`, 150, 20)
+                }
+
+                const tableData = finalData.map((row: any) => {
+                    return columns.map(col => {
+                        const val = col.key.split('.').reduce((o, i) => (o ? o[i] : ''), row)
+                        return val || '-'
+                    })
+                })
+
+                autoTable(doc, {
+                    head: [columns.map(c => c.label)],
+                    body: tableData,
+                    startY: 45,
+                    theme: 'grid',
+                    headStyles: {
+                        fillColor: [0, 120, 130],
+                        textColor: 255,
+                        fontSize: 9,
+                        fontStyle: 'bold',
+                        halign: 'center'
+                    },
+                    bodyStyles: {
+                        fontSize: 8,
+                        textColor: 51
+                    },
+                    alternateRowStyles: {
+                        fillColor: [249, 250, 251]
+                    },
+                    margin: { top: 45, bottom: 20 },
+                    didDrawPage: (data) => {
+                        // Header only on first page? No, professional reports usually have it or at least a title
+                        // But startY handles it for the first page.
+                        if (data.pageNumber === 1) {
+                            addHeader(doc)
+                        }
+
+                        // Footer with pagination
+                        const str = "Page " + data.pageNumber + " of " + (doc as any).internal.getNumberOfPages()
+                        doc.setFontSize(8)
+                        doc.setTextColor(100, 116, 139)
+                        const pageSize = doc.internal.pageSize
+                        const pageHeight = pageSize.height ? pageSize.height : pageSize.getHeight()
+                        doc.text(str, data.settings.margin.left, pageHeight - 10)
+                        doc.text(`© ${dayjs().format('YYYY')} SCREEN-IT - CONFIDENTIAL MEDICAL DATA`, (pageSize.width / 2) - 40, pageHeight - 10)
+                    }
+                })
+
+                doc.save(`${filename}.pdf`)
+            }
+
+            toast({ title: "Success", description: `${filename}.${format === 'pdf' ? 'pdf' : 'csv'} has been generated.`, variant: "success" })
+        } catch (error) {
+            console.error("Report generation failed", error)
+            toast({ title: "Error", description: "Failed to generate report. Please try again.", variant: "destructive" })
+        } finally {
+            setIsGenerating(false)
+        }
+    }
 
     const stats = useMemo(() => {
         if (!dashboardData?.stats) return []
@@ -87,7 +299,7 @@ export default function ReportsPage() {
     const trends = dashboardData?.analytics?.trends || []
 
     return (
-        <DashboardShell title="Reports & Export" subtitle="Pearl Hospital">
+        <DashboardShell title="Reports" subtitle="SCREEN-IT Comprehensive Reporting System">
             <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div>
                     <h2 className="text-3xl font-black text-foreground mb-1 tracking-tighter uppercase">Analytics & Reports</h2>
@@ -170,25 +382,35 @@ export default function ReportsPage() {
                         <CardContent className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {reportTypes.map((type) => (
-                                    <div key={type.title} className="p-4 border border-border bg-muted/50 hover:border-primary/50 hover:bg-primary/5 transition-all cursor-pointer group">
+                                    <div
+                                        key={type.id}
+                                        onClick={() => setSelectedType(type.id)}
+                                        className={cn(
+                                            "p-4 border-2 transition-all cursor-pointer group relative",
+                                            selectedType === type.id
+                                                ? "border-primary bg-primary/5 shadow-sm"
+                                                : "border-border bg-muted/30 hover:border-primary/30 hover:bg-primary/5"
+                                        )}
+                                    >
                                         <div className="flex gap-4">
-                                            <div className="w-10 h-10 border border-border bg-card flex items-center justify-center text-muted-foreground group-hover:text-primary">
+                                            <div className={cn(
+                                                "w-10 h-10 border flex items-center justify-center transition-colors",
+                                                selectedType === type.id
+                                                    ? "bg-primary text-white border-primary"
+                                                    : "bg-card text-muted-foreground border-border group-hover:text-primary"
+                                            )}>
                                                 <type.icon className="h-5 w-5" />
                                             </div>
-                                            <div className="flex-1">
+                                            <div className="flex-1 pr-6">
                                                 <h4 className="text-sm font-bold text-foreground mb-1">{type.title}</h4>
-                                                <p className="text-[11px] text-muted-foreground leading-relaxed mb-3">{type.desc}</p>
-                                                <div className="flex items-center gap-4">
-                                                    <span className="text-[10px] font-bold text-muted-foreground uppercase flex items-center gap-1">
-                                                        <Calendar className="h-3 w-3" />
-                                                        {type.schedule}
-                                                    </span>
-                                                    <span className="text-[10px] font-bold text-muted-foreground uppercase flex items-center gap-1">
-                                                        <Paperclip className="h-3 w-3" />
-                                                        Last: {type.lastGenerated}
-                                                    </span>
-                                                </div>
+                                                <p className="text-[11px] text-muted-foreground leading-relaxed">{type.desc}</p>
                                             </div>
+                                        </div>
+                                        <div className={cn(
+                                            "absolute top-4 right-4 h-4 w-4 rounded-full border-2 flex items-center justify-center",
+                                            selectedType === type.id ? "border-primary" : "border-muted-foreground/30"
+                                        )}>
+                                            {selectedType === type.id && <div className="h-2 w-2 rounded-full bg-primary" />}
                                         </div>
                                     </div>
                                 ))}
@@ -197,7 +419,7 @@ export default function ReportsPage() {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
                                 <div className="space-y-2">
                                     <label className="text-sm font-bold text-muted-foreground">Date Range</label>
-                                    <Select defaultValue="7">
+                                    <Select value={dateRange} onValueChange={setDateRange}>
                                         <SelectTrigger className="h-12 bg-muted/50 border-none text-foreground">
                                             <SelectValue placeholder="Select range" />
                                         </SelectTrigger>
@@ -210,22 +432,29 @@ export default function ReportsPage() {
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-sm font-bold text-muted-foreground">Format</label>
-                                    <Select defaultValue="pdf">
+                                    <Select value={format} onValueChange={setFormat}>
                                         <SelectTrigger className="h-12 bg-muted/50 border-none text-foreground">
                                             <SelectValue placeholder="Select format" />
                                         </SelectTrigger>
                                         <SelectContent>
                                             <SelectItem value="pdf">PDF Report</SelectItem>
-                                            <SelectItem value="excel">Excel Sheet</SelectItem>
                                             <SelectItem value="csv">CSV Data</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>
                             </div>
 
-                            <Button className="w-full h-12 bg-primary hover:bg-primary/90 text-white font-bold gap-2">
-                                <Paperclip className="h-5 w-5 rotate-45" />
-                                Generate Report
+                            <Button
+                                disabled={isGenerating}
+                                onClick={handleGenerateReport}
+                                className="w-full h-12 bg-primary hover:bg-primary/90 text-white font-bold gap-2"
+                            >
+                                {isGenerating ? (
+                                    <Loader2 className="h-5 w-5 animate-spin" />
+                                ) : (
+                                    <Paperclip className="h-5 w-5 rotate-45" />
+                                )}
+                                {isGenerating ? "Generating..." : "Generate Report"}
                             </Button>
                         </CardContent>
                     </Card>
@@ -238,19 +467,59 @@ export default function ReportsPage() {
                             <CardTitle className="text-lg font-bold text-foreground">Data Export</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-3">
-                            <Button variant="outline" className="w-full justify-between h-11 border-border bg-card text-sm font-bold text-muted-foreground hover:text-foreground group px-4">
+                            <Button
+                                variant="outline"
+                                onClick={() => {
+                                    setSelectedType("screening_summary")
+                                    handleGenerateReport()
+                                }}
+                                className="w-full justify-between h-11 border-border bg-card text-sm font-bold text-muted-foreground hover:text-foreground group px-4"
+                            >
                                 <div className="flex items-center gap-3">
                                     <Download className="h-4 w-4 opacity-50 group-hover:opacity-100" />
                                     Export All Screening Data
                                 </div>
                             </Button>
-                            <Button variant="outline" className="w-full justify-between h-11 border-border bg-card text-sm font-bold text-muted-foreground hover:text-foreground group px-4">
+                            <Button
+                                variant="outline"
+                                onClick={() => {
+                                    setSelectedType("chp_performance")
+                                    handleGenerateReport()
+                                }}
+                                className="h-11 justify-between w-full border-border bg-card text-sm font-bold text-muted-foreground hover:text-foreground group px-4"
+                            >
                                 <div className="flex items-center gap-3">
                                     <Download className="h-4 w-4 opacity-50 group-hover:opacity-100" />
                                     Export CHP Performance
                                 </div>
                             </Button>
-                            <Button variant="outline" className="w-full justify-between h-11 border-border bg-card text-sm font-bold text-muted-foreground hover:text-foreground group px-4">
+                            <Button
+                                variant="outline"
+                                onClick={() => {
+                                    // Clients export logic
+                                    const triggerClientsExport = async () => {
+                                        setIsGenerating(true)
+                                        try {
+                                            const res = await apiRequest("/clients?limit=1000")
+                                            const data = res.results || []
+                                            exportToCSV(data, `clients-db-${dayjs().format("YYYY-MM-DD")}`, [
+                                                { key: "firstName", label: "First Name" },
+                                                { key: "lastName", label: "Last Name" },
+                                                { key: "phoneNumber", label: "Phone" },
+                                                { key: "nationalId", label: "National ID" },
+                                                { key: "createdAt", label: "Joined" }
+                                            ])
+                                            toast({ title: "Success", description: "Clients database exported.", variant: "success" })
+                                        } catch (e) {
+                                            toast({ title: "Error", description: "Export failed", variant: "destructive" })
+                                        } finally {
+                                            setIsGenerating(false)
+                                        }
+                                    }
+                                    triggerClientsExport()
+                                }}
+                                className="w-full justify-between h-11 border-border bg-card text-sm font-bold text-muted-foreground hover:text-foreground group px-4"
+                            >
                                 <div className="flex items-center gap-3">
                                     <Download className="h-4 w-4 opacity-50 group-hover:opacity-100" />
                                     Export Client Database

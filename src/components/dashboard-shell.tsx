@@ -18,11 +18,11 @@ export default function DashboardLayout({
 
     return (
         <SidebarProvider>
-            <div className="flex min-h-screen w-full bg-background transition-colors duration-300">
+            <div className="flex h-screen w-full bg-background transition-colors duration-300 overflow-hidden">
                 <AppSidebar />
-                <main className="flex-1 flex flex-col overflow-y-auto">
+                <div className="flex-1 flex flex-col min-w-0 h-full">
                     <AppHeader title={title} subtitle={subtitle} />
-                    <div className="flex-1">
+                    <main className="flex-1 overflow-y-auto">
                         <div className="px-8 pt-8 flex items-center text-sm font-medium">
                             <span className="text-muted-foreground">Application</span>
                             {pathSegments.map((segment, index) => (
@@ -37,8 +37,8 @@ export default function DashboardLayout({
                         <div className="p-4 md:p-8 pt-4">
                             {children}
                         </div>
-                    </div>
-                </main>
+                    </main>
+                </div>
             </div>
         </SidebarProvider>
     )
