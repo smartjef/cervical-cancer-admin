@@ -5,6 +5,7 @@ import { Search, Settings, Globe, ChevronRight, Moon, Sun, UserPlus, Loader2, Mo
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
+import Cookies from "js-cookie"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import {
     Command,
@@ -114,6 +115,7 @@ export function AppHeader({ title, subtitle }: { title: string; subtitle?: strin
         } catch (error) {
             // Fallback: simple logout if API fails or doesn't exist
             await signOut()
+            Cookies.remove('better-auth.session_token')
             window.location.href = '/login'
         } finally {
             setIsImpersonatingRunning(false)
