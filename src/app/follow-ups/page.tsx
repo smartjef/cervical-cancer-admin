@@ -1,5 +1,4 @@
-import FollowUpsClient from "./follow-ups-client"
-
+import FollowUpsClient from "./follow-ups-client";
 export default function FollowUpsPage() {
-    return <FollowUpsClient />
+  return <FollowUpsClient />;
 }

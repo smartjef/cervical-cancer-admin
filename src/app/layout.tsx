@@ -14,25 +14,16 @@ export const metadata: Metadata = {
     default: "SCREEN-IT - Cervical Cancer Screening",
   },
   description: "Advanced Cervical Cancer Screening and Management System",
-  icons: {
-    icon: "/logo.jpeg",
-    shortcut: "/logo.jpeg",
-    apple: "/logo.jpeg",
-  },
-  robots: {
-    index: false,
-    follow: false,
-  },
+  icons: { icon: "/logo.jpeg", shortcut: "/logo.jpeg", apple: "/logo.jpeg" },
+  robots: { index: false, follow: false },
 };
 
-import { ThemeProvider } from "@/components/theme-provider"
-import { Toaster } from "@/components/ui/toaster"
+import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "@/components/ui/toaster";
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${ibmPlexSans.className} antialiased`}>

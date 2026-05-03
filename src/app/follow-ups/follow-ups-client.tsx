@@ -11,15 +11,15 @@ import { DataTable } from "@/components/data-table"
 import { exportToCSV } from "@/lib/export-utils"
 import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
-import {
-    Search,
-    Filter,
-    RotateCcw,
-    Download,
-    CalendarClock,
-    User,
-    ClipboardCheck,
-    AlertCircle
+import { 
+    Search, 
+    Filter, 
+    RotateCcw, 
+    Download, 
+    CalendarClock, 
+    User, 
+    ClipboardCheck, 
+    AlertCircle 
 } from "lucide-react"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Label } from "@/components/ui/label"
@@ -54,7 +54,6 @@ export default function FollowUpsClient() {
         if (search) params.search = search
         if (sortBy) params.sortBy = sortBy
         if (sortOrder) params.sortOrder = sortOrder.toUpperCase()
-
         if (priorityFilter !== "all") params.priority = priorityFilter
         if (categoryFilter !== "all") params.category = categoryFilter
         if (statusFilter !== "all") params.status = statusFilter
@@ -111,7 +110,10 @@ export default function FollowUpsClient() {
                         accessorKey: "id",
                         cell: (item: any) => (
                             <div className="flex flex-col">
-                                <Link href={`/follow-ups/${item.id}`} className="font-mono text-[10px] font-bold text-primary hover:underline">
+                                <Link 
+                                    href={`/follow-ups/${item.id}`} 
+                                    className="font-mono text-[10px] font-bold text-primary hover:underline"
+                                >
                                     #{item.id.slice(-6).toUpperCase()}
                                 </Link>
                                 <span className="text-[10px] text-muted-foreground">{dayjs(item.createdAt).format('MMM D, YYYY')}</span>
@@ -124,7 +126,10 @@ export default function FollowUpsClient() {
                         header: "Client",
                         accessorKey: "client.firstName",
                         cell: (item: any) => (
-                            <Link href={`/users/clients/${item.clientId}`} className="font-bold text-foreground hover:underline flex items-center gap-2">
+                            <Link 
+                                href={`/users/clients/${item.clientId}`} 
+                                className="font-bold text-foreground hover:underline flex items-center gap-2"
+                            >
                                 <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                                     <User className="h-3 w-3 text-primary" />
                                 </div>
@@ -138,12 +143,14 @@ export default function FollowUpsClient() {
                         accessorKey: "category",
                         cell: (item: any) => (
                             <div className="flex flex-col gap-1">
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{item.category?.replace(/_/g, " ")}</span>
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                                    {item.category?.replace(/_/g, " ")}
+                                </span>
                                 <Badge variant="outline" className={`
                                     w-fit text-[9px] font-bold border-none px-1.5 py-0 rounded
-                                    ${item.priority === 'HIGH' ? 'bg-rose-500/10 text-rose-600' :
-                                        item.priority === 'MEDIUM' ? 'bg-amber-500/10 text-amber-600' :
-                                            'bg-sky-500/10 text-sky-600'}
+                                    ${item.priority === 'HIGH' ? 'bg-rose-500/10 text-rose-600' : 
+                                      item.priority === 'MEDIUM' ? 'bg-amber-500/10 text-amber-600' : 
+                                      'bg-sky-500/10 text-sky-600'}
                                 `}>
                                     {item.priority}
                                 </Badge>
@@ -156,12 +163,18 @@ export default function FollowUpsClient() {
                         accessorKey: "triggerScreeningId",
                         cell: (item: any) => (
                             <div className="flex flex-col gap-1">
-                                <Link href={`/screening/${item.triggerScreeningId}`} className="text-[10px] font-mono text-primary hover:underline flex items-center gap-1">
+                                <Link 
+                                    href={`/screening/${item.triggerScreeningId}`} 
+                                    className="text-[10px] font-mono text-primary hover:underline flex items-center gap-1"
+                                >
                                     <ClipboardCheck className="h-3 w-3" />
                                     #{item.triggerScreeningId.slice(-6).toUpperCase()}
                                 </Link>
                                 {item.referralId && (
-                                    <Link href={`/referrals/${item.referralId}`} className="text-[9px] text-muted-foreground hover:underline ml-4">
+                                    <Link 
+                                        href={`/referrals/${item.referralId}`} 
+                                        className="text-[9px] text-muted-foreground hover:underline ml-4"
+                                    >
                                         Related Referral
                                     </Link>
                                 )}
@@ -175,7 +188,6 @@ export default function FollowUpsClient() {
                         cell: (item: any) => {
                             const isCompleted = !!item.completedAt;
                             const isOverdue = !isCompleted && dayjs(item.dueDate).isBefore(dayjs());
-
                             return (
                                 <div className="flex flex-col gap-1">
                                     <span className="font-bold text-xs">{dayjs(item.dueDate).format("MMM D, YYYY")}</span>

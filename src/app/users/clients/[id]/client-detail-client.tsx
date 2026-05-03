@@ -4,47 +4,54 @@ import { useApi } from "@/hooks/use-api"
 import DashboardShell from "@/components/dashboard-shell"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import {
-    Loader2, Calendar, MapPin, User, AlertCircle, Phone, ArrowLeft,
-    Trash2, Edit, Activity as ActivityIcon
+import { 
+    Loader2, 
+    Calendar, 
+    MapPin, 
+    User, 
+    AlertCircle, 
+    Phone, 
+    ArrowLeft, 
+    Trash2, 
+    Edit, 
+    Activity as ActivityIcon 
 } from "lucide-react"
 import dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime"
-
-dayjs.extend(relativeTime)
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
 import { apiRequest } from "@/lib/api"
 import { useToast } from "@/hooks/use-toast"
 import { useState, useEffect } from "react"
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
+import { 
+    AlertDialog, 
+    AlertDialogAction, 
+    AlertDialogCancel, 
+    AlertDialogContent, 
+    AlertDialogDescription, 
+    AlertDialogFooter, 
+    AlertDialogHeader, 
+    AlertDialogTitle 
 } from "@/components/ui/alert-dialog"
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
+import { 
+    Dialog, 
+    DialogContent, 
+    DialogDescription, 
+    DialogFooter, 
+    DialogHeader, 
+    DialogTitle 
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { DataTable } from "@/components/data-table"
 
+dayjs.extend(relativeTime)
+
 export default function ClientDetailClient({ id }: { id: string }) {
     const router = useRouter()
     const { data: client, isLoading: clientLoading, refetch: refetchClient } = useApi<any>(`/clients/${id}`)
-
     const { toast } = useToast()
 
     // State management
@@ -215,30 +222,35 @@ export default function ClientDetailClient({ id }: { id: string }) {
             <div className="mb-6">
                 <Link href="/users">
                     <Button variant="ghost" size="sm" className="gap-2">
-                        <ArrowLeft className="h-4 w-4" />
-                        Back to User Management
+                        <ArrowLeft className="h-4 w-4" /> Back to User Management
                     </Button>
                 </Link>
             </div>
 
             <div className="grid gap-6 lg:grid-cols-4">
                 {/* Left Sidebar: Profile Card */}
-                <Card className="border border-border/50 bg-card shadow-sm lg:col-span-1 h-fit">
+                <Card className="border border-border/50 bg-card lg:col-span-1 h-fit">
                     <CardHeader className="pb-4">
                         <div className="flex flex-col items-center mb-3">
                             <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-3">
                                 <User className="h-8 w-8" />
                             </div>
-                            <CardTitle className="text-lg font-bold text-foreground text-center">{client.firstName} {client.lastName}</CardTitle>
-                            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mt-1">ID: {client.nationalId}</p>
+                            <CardTitle className="text-lg font-bold text-foreground text-center">
+                                {client.firstName} {client.lastName}
+                            </CardTitle>
+                            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mt-1">
+                                ID: {client.nationalId}
+                            </p>
                         </div>
-                        <Badge variant="outline" className={`
-                            font-bold border-none px-2.5 py-0.5 rounded-full text-[10px] uppercase tracking-wider w-fit mx-auto
-                            ${riskInterpretation.includes('HIGH') ? 'bg-rose-500/10 text-rose-600' :
-                                (riskInterpretation.includes('MEDIUM') || riskInterpretation.includes('MODERATE')) ? 'bg-amber-500/10 text-amber-600' :
-                                    riskInterpretation === 'NOT_SCREENED' ? 'bg-muted text-muted-foreground' : 'bg-emerald-500/10 text-emerald-600'
-                            }
-                        `}>
+                        <Badge 
+                            variant="outline" 
+                            className={`font-bold border-none px-2.5 py-0.5 rounded-full text-[10px] uppercase tracking-wider w-fit mx-auto ${
+                                riskInterpretation.includes('HIGH') ? 'bg-rose-500/10 text-rose-600' : 
+                                (riskInterpretation.includes('MEDIUM') || riskInterpretation.includes('MODERATE')) ? 'bg-amber-500/10 text-amber-600' : 
+                                riskInterpretation === 'NOT_SCREENED' ? 'bg-muted text-muted-foreground' : 
+                                'bg-emerald-500/10 text-emerald-600'
+                            }`}
+                        >
                             {riskInterpretation.replace('_RISK', '').replace('MODERATE', 'MEDIUM').replace('NOT_SCREENED', 'Not Screened')}
                         </Badge>
                     </CardHeader>
@@ -247,7 +259,6 @@ export default function ClientDetailClient({ id }: { id: string }) {
                             <span className="text-xs font-bold text-muted-foreground uppercase">Risk Score</span>
                             <span className="text-lg font-black text-primary">{riskScore}</span>
                         </div>
-
                         <div className="space-y-2 pt-2">
                             <div className="flex items-center gap-2 text-sm">
                                 <div className="p-1.5 rounded-lg bg-muted/50">
@@ -268,23 +279,20 @@ export default function ClientDetailClient({ id }: { id: string }) {
                                 <span className="text-foreground font-medium text-xs truncate">{client.county}, {client.subcounty}</span>
                             </div>
                         </div>
-
                         <div className="pt-3 border-t border-border/50 space-y-2">
-                            <Button
-                                variant="outline"
-                                className="w-full justify-start gap-2 font-bold rounded-xl border-border/60 hover:bg-primary/5 hover:text-primary hover:border-primary/20 h-9 text-xs"
+                            <Button 
+                                variant="outline" 
+                                className="w-full justify-start gap-2 font-bold rounded-xl border-border/60 hover:bg-primary/5 hover:text-primary hover:border-primary/20 h-9 text-xs" 
                                 onClick={() => setIsEditDialogOpen(true)}
                             >
-                                <Edit className="h-3.5 w-3.5" />
-                                Edit Client
+                                <Edit className="h-3.5 w-3.5" /> Edit Client
                             </Button>
-                            <Button
-                                variant="outline"
-                                className="w-full justify-start gap-2 font-bold rounded-xl border-rose-100 bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white hover:border-rose-600 h-9 text-xs"
+                            <Button 
+                                variant="outline" 
+                                className="w-full justify-start gap-2 font-bold rounded-xl border-rose-100 bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white hover:border-rose-600 h-9 text-xs" 
                                 onClick={() => setIsDeleteDialogOpen(true)}
                             >
-                                <Trash2 className="h-3.5 w-3.5" />
-                                Delete Client
+                                <Trash2 className="h-3.5 w-3.5" /> Delete Client
                             </Button>
                         </div>
                     </CardContent>
@@ -295,21 +303,21 @@ export default function ClientDetailClient({ id }: { id: string }) {
                     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                         <TabsList className="grid w-full grid-cols-3 mb-6">
                             <TabsTrigger value="screenings" className="gap-2">
-                                <ActivityIcon className="h-4 w-4" />
+                                <ActivityIcon className="h-4 w-4" /> 
                                 Screenings
                                 <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 rounded-full px-1.5 py-0 h-4 text-[10px] min-w-[1.25rem] flex justify-center">
                                     {screeningsData?.totalCount || 0}
                                 </Badge>
                             </TabsTrigger>
                             <TabsTrigger value="referrals" className="gap-2">
-                                <ActivityIcon className="h-4 w-4" />
+                                <ActivityIcon className="h-4 w-4" /> 
                                 Referrals
                                 <Badge variant="outline" className="bg-amber-50 text-amber-600 border-amber-100 rounded-full px-1.5 py-0 h-4 text-[10px] min-w-[1.25rem] flex justify-center">
                                     {referralsData?.totalCount || 0}
                                 </Badge>
                             </TabsTrigger>
                             <TabsTrigger value="followups" className="gap-2">
-                                <ActivityIcon className="h-4 w-4" />
+                                <ActivityIcon className="h-4 w-4" /> 
                                 Follow-ups
                                 <Badge variant="outline" className="bg-emerald-50 text-emerald-600 border-emerald-100 rounded-full px-1.5 py-0 h-4 text-[10px] min-w-[1.25rem] flex justify-center">
                                     {followupsData?.totalCount || 0}
@@ -317,9 +325,8 @@ export default function ClientDetailClient({ id }: { id: string }) {
                             </TabsTrigger>
                         </TabsList>
 
-                        {/* Screenings Tab */}
                         <TabsContent value="screenings">
-                            <DataTable
+                            <DataTable 
                                 columns={[
                                     {
                                         header: "Screening ID",
@@ -336,13 +343,11 @@ export default function ClientDetailClient({ id }: { id: string }) {
                                         header: "Risk Level",
                                         accessorKey: "scoringResult.interpretation",
                                         cell: (item: any) => (
-                                            <Badge variant="outline" className={`
-                                                    font-bold border-none px-2.5 py-0.5 rounded-full text-[10px] uppercase tracking-wider
-                                                    ${item.scoringResult?.interpretation?.includes('HIGH') ? 'bg-rose-500/10 text-rose-600' :
-                                                    (item.scoringResult?.interpretation?.includes('MEDIUM') || item.scoringResult?.interpretation?.includes('MODERATE')) ? 'bg-amber-500/10 text-amber-600' :
-                                                        'bg-emerald-500/10 text-emerald-600'
-                                                }
-                                                `}>
+                                            <Badge variant="outline" className={`font-bold border-none px-2.5 py-0.5 rounded-full text-[10px] uppercase tracking-wider ${
+                                                item.scoringResult?.interpretation?.includes('HIGH') ? 'bg-rose-500/10 text-rose-600' : 
+                                                (item.scoringResult?.interpretation?.includes('MEDIUM') || item.scoringResult?.interpretation?.includes('MODERATE')) ? 'bg-amber-500/10 text-amber-600' : 
+                                                'bg-emerald-500/10 text-emerald-600'
+                                            }`}>
                                                 {item.scoringResult?.interpretation?.replace('_RISK', '').replace('MODERATE', 'MEDIUM') || 'N/A'}
                                             </Badge>
                                         ),
@@ -372,9 +377,8 @@ export default function ClientDetailClient({ id }: { id: string }) {
                             />
                         </TabsContent>
 
-                        {/* Referrals Tab */}
                         <TabsContent value="referrals">
-                            <DataTable
+                            <DataTable 
                                 columns={[
                                     {
                                         header: "Referral ID",
@@ -436,14 +440,12 @@ export default function ClientDetailClient({ id }: { id: string }) {
                                         header: "Status",
                                         accessorKey: "status",
                                         cell: (item: any) => (
-                                            <Badge variant="outline" className={`
-                                                    font-bold border-none px-2.5 py-0.5 rounded-full text-[10px] uppercase tracking-wider
-                                                    ${item.status === 'COMPLETED' ? 'bg-emerald-500/10 text-emerald-600' :
-                                                    item.status === 'PENDING' ? 'bg-amber-500/10 text-amber-600' :
-                                                        item.status === 'CANCELLED' ? 'bg-rose-500/10 text-rose-600' :
-                                                            'bg-muted text-muted-foreground'
-                                                }
-                                                `}>
+                                            <Badge variant="outline" className={`font-bold border-none px-2.5 py-0.5 rounded-full text-[10px] uppercase tracking-wider ${
+                                                item.status === 'COMPLETED' ? 'bg-emerald-500/10 text-emerald-600' : 
+                                                item.status === 'PENDING' ? 'bg-amber-500/10 text-amber-600' : 
+                                                item.status === 'CANCELLED' ? 'bg-rose-500/10 text-rose-600' : 
+                                                'bg-muted text-muted-foreground'
+                                            }`}>
                                                 {item.status || 'N/A'}
                                             </Badge>
                                         ),
@@ -453,13 +455,11 @@ export default function ClientDetailClient({ id }: { id: string }) {
                                         header: "Risk Level",
                                         accessorKey: "screening.scoringResult.interpretation",
                                         cell: (item: any) => (
-                                            <Badge variant="outline" className={`
-                                                    font-bold border-none px-2.5 py-0.5 rounded-full text-[10px] uppercase tracking-wider
-                                                    ${item.screening?.scoringResult?.interpretation?.includes('HIGH') ? 'bg-rose-500/10 text-rose-600' :
-                                                    (item.screening?.scoringResult?.interpretation?.includes('MEDIUM') || item.screening?.scoringResult?.interpretation?.includes('MODERATE')) ? 'bg-amber-500/10 text-amber-600' :
-                                                        'bg-emerald-500/10 text-emerald-600'
-                                                }
-                                                `}>
+                                            <Badge variant="outline" className={`font-bold border-none px-2.5 py-0.5 rounded-full text-[10px] uppercase tracking-wider ${
+                                                item.screening?.scoringResult?.interpretation?.includes('HIGH') ? 'bg-rose-500/10 text-rose-600' : 
+                                                (item.screening?.scoringResult?.interpretation?.includes('MEDIUM') || item.screening?.scoringResult?.interpretation?.includes('MODERATE')) ? 'bg-amber-500/10 text-amber-600' : 
+                                                'bg-emerald-500/10 text-emerald-600'
+                                            }`}>
                                                 {item.screening?.scoringResult?.interpretation?.replace('_RISK', '').replace('MODERATE', 'MEDIUM') || 'N/A'}
                                             </Badge>
                                         ),
@@ -499,9 +499,8 @@ export default function ClientDetailClient({ id }: { id: string }) {
                             />
                         </TabsContent>
 
-                        {/* Follow-ups Tab */}
                         <TabsContent value="followups">
-                            <DataTable
+                            <DataTable 
                                 columns={[
                                     {
                                         header: "Follow-up ID",
@@ -523,13 +522,11 @@ export default function ClientDetailClient({ id }: { id: string }) {
                                         cell: (item: any) => (
                                             <div className="flex flex-col">
                                                 <span className="font-bold text-foreground text-xs">{item.category?.replace('_', ' ') || 'N/A'}</span>
-                                                <Badge variant="outline" className={`
-                                                        font-bold border-none px-2 py-0.5 rounded-full text-[9px] uppercase tracking-wider w-fit mt-1
-                                                        ${item.priority === 'HIGH' ? 'bg-rose-500/10 text-rose-600' :
-                                                        item.priority === 'MEDIUM' ? 'bg-amber-500/10 text-amber-600' :
-                                                            'bg-blue-500/10 text-blue-600'
-                                                    }
-                                                    `}>
+                                                <Badge variant="outline" className={`font-bold border-none px-2 py-0.5 rounded-full text-[9px] uppercase tracking-wider w-fit mt-1 ${
+                                                    item.priority === 'HIGH' ? 'bg-rose-500/10 text-rose-600' : 
+                                                    item.priority === 'MEDIUM' ? 'bg-amber-500/10 text-amber-600' : 
+                                                    'bg-blue-500/10 text-blue-600'
+                                                }`}>
                                                     {item.priority || 'N/A'}
                                                 </Badge>
                                             </div>
@@ -545,13 +542,11 @@ export default function ClientDetailClient({ id }: { id: string }) {
                                                     #{item.triggerScreeningId?.slice(-6).toUpperCase() || 'N/A'}
                                                 </Link>
                                                 {item.triggerScreening?.scoringResult && (
-                                                    <Badge variant="outline" className={`
-                                                            font-bold border-none px-2 py-0.5 rounded-full text-[9px] uppercase tracking-wider w-fit mt-1
-                                                            ${item.triggerScreening.scoringResult.interpretation?.includes('HIGH') ? 'bg-rose-500/10 text-rose-600' :
-                                                            item.triggerScreening.scoringResult.interpretation?.includes('MEDIUM') ? 'bg-amber-500/10 text-amber-600' :
-                                                                'bg-emerald-500/10 text-emerald-600'
-                                                        }
-                                                        `}>
+                                                    <Badge variant="outline" className={`font-bold border-none px-2 py-0.5 rounded-full text-[9px] uppercase tracking-wider w-fit mt-1 ${
+                                                        item.triggerScreening.scoringResult.interpretation?.includes('HIGH') ? 'bg-rose-500/10 text-rose-600' : 
+                                                        item.triggerScreening.scoringResult.interpretation?.includes('MEDIUM') ? 'bg-amber-500/10 text-amber-600' : 
+                                                        'bg-emerald-500/10 text-emerald-600'
+                                                    }`}>
                                                         {item.triggerScreening.scoringResult.interpretation?.replace('_RISK', '').replace('MODERATE', 'MEDIUM')}
                                                     </Badge>
                                                 )}
@@ -588,9 +583,7 @@ export default function ClientDetailClient({ id }: { id: string }) {
                                                         Overdue
                                                     </Badge>
                                                 ) : (
-                                                    <span className="text-[10px] text-muted-foreground mt-1">
-                                                        {dayjs(item.dueDate).fromNow()}
-                                                    </span>
+                                                    <span className="text-[10px] text-muted-foreground mt-1">{dayjs(item.dueDate).fromNow()}</span>
                                                 )}
                                             </div>
                                         ),
@@ -624,62 +617,33 @@ export default function ClientDetailClient({ id }: { id: string }) {
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label htmlFor="firstName">First Name</Label>
-                                <Input
-                                    id="firstName"
-                                    value={editForm.firstName}
-                                    onChange={(e) => setEditForm({ ...editForm, firstName: e.target.value })}
-                                />
+                                <Input id="firstName" value={editForm.firstName} onChange={(e) => setEditForm({ ...editForm, firstName: e.target.value })} />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="lastName">Last Name</Label>
-                                <Input
-                                    id="lastName"
-                                    value={editForm.lastName}
-                                    onChange={(e) => setEditForm({ ...editForm, lastName: e.target.value })}
-                                />
+                                <Input id="lastName" value={editForm.lastName} onChange={(e) => setEditForm({ ...editForm, lastName: e.target.value })} />
                             </div>
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="phoneNumber">Phone Number</Label>
-                            <Input
-                                id="phoneNumber"
-                                value={editForm.phoneNumber}
-                                onChange={(e) => setEditForm({ ...editForm, phoneNumber: e.target.value })}
-                            />
+                            <Input id="phoneNumber" value={editForm.phoneNumber} onChange={(e) => setEditForm({ ...editForm, phoneNumber: e.target.value })} />
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="dateOfBirth">Date of Birth</Label>
-                            <Input
-                                id="dateOfBirth"
-                                type="date"
-                                value={editForm.dateOfBirth}
-                                onChange={(e) => setEditForm({ ...editForm, dateOfBirth: e.target.value })}
-                            />
+                            <Input id="dateOfBirth" type="date" value={editForm.dateOfBirth} onChange={(e) => setEditForm({ ...editForm, dateOfBirth: e.target.value })} />
                         </div>
                         <div className="grid grid-cols-3 gap-4">
                             <div className="space-y-2">
                                 <Label htmlFor="county">County</Label>
-                                <Input
-                                    id="county"
-                                    value={editForm.county}
-                                    onChange={(e) => setEditForm({ ...editForm, county: e.target.value })}
-                                />
+                                <Input id="county" value={editForm.county} onChange={(e) => setEditForm({ ...editForm, county: e.target.value })} />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="subcounty">Subcounty</Label>
-                                <Input
-                                    id="subcounty"
-                                    value={editForm.subcounty}
-                                    onChange={(e) => setEditForm({ ...editForm, subcounty: e.target.value })}
-                                />
+                                <Input id="subcounty" value={editForm.subcounty} onChange={(e) => setEditForm({ ...editForm, subcounty: e.target.value })} />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="ward">Ward</Label>
-                                <Input
-                                    id="ward"
-                                    value={editForm.ward}
-                                    onChange={(e) => setEditForm({ ...editForm, ward: e.target.value })}
-                                />
+                                <Input id="ward" value={editForm.ward} onChange={(e) => setEditForm({ ...editForm, ward: e.target.value })} />
                             </div>
                         </div>
                     </div>
@@ -706,8 +670,8 @@ export default function ClientDetailClient({ id }: { id: string }) {
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel disabled={isSubmitting}>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                            onClick={(e) => { e.preventDefault(); handleDelete(); }}
+                        <AlertDialogAction 
+                            onClick={(e) => { e.preventDefault(); handleDelete(); }} 
                             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                             disabled={isSubmitting}
                         >
