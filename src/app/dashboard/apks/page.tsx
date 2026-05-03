@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { getAPKs } from "@/lib/apk-actions";
 import ApkClient from "./apk-client";
 

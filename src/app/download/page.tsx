@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { PublicHeader } from "@/components/public-header";
 import { Button } from "@/components/ui/button";
 import { Smartphone, Download, CheckCircle2 } from "lucide-react";
@@ -135,7 +137,7 @@ export default async function DownloadPage() {
                 </div>
               </div>
 
-              {versions.length > 1 && (
+              {versions.length > 0 && (
                 <div className="bg-white rounded-3xl border border-border p-6">
                   <h3 className="font-bold mb-6">Version History</h3>
                   <div className="space-y-4">
