@@ -44,9 +44,9 @@ export default async function DownloadPage() {
                 <h3 className="font-bold text-lg">System Requirements:</h3>
                 <ul className="space-y-3">
                   {[
-                    "Android 8.0 (Oreo) or higher",
-                    "Minimum 2GB RAM",
-                    "100MB free storage space",
+                    "Android 10.0 or higher",
+                    "Minimum 4GB RAM",
+                    "500MB free storage space",
                     "Internet connection (for initial sync)",
                   ].map((req, idx) => (
                     <li
