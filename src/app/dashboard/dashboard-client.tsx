@@ -2,68 +2,17 @@
 
 import DashboardShell from "@/components/dashboard-shell"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import {
-    Heart,
-    Users,
-    Calendar,
-    Target,
-    AlertTriangle,
-    CheckCircle2,
-    MoreVertical,
-    BarChart3
+import { 
+    Heart, 
+    Users, 
+    Calendar, 
+    Target, 
+    AlertTriangle, 
+    CheckCircle2, 
+    MoreVertical, 
+    BarChart3 
 } from "lucide-react"
 import RecentActivityFeed from "@/components/recent-activity-feed"
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
-import { Bar, BarChart, XAxis, YAxis, ResponsiveContainer, Cell } from "recharts"
-
-const stats = [
-    {
-        title: "Total Screenings",
-        value: "456",
-        change: "+12% from last month",
-        icon: Heart,
-        color: "text-primary",
-        bg: "bg-primary/10",
-    },
-    {
-        title: "Active CHPs",
-        value: "2/2",
-        change: "Active in last 7 days",
-        icon: Users,
-        color: "text-secondary",
-        bg: "bg-secondary/10",
-    },
-    {
-        title: "This Month",
-        value: "89",
-        change: "Target: 100 screenings",
-        icon: BarChart3,
-        color: "text-cyan-600",
-        bg: "bg-cyan-50",
-    },
-    {
-        title: "Follow-up Rate",
-        value: "87%",
-        change: "Target: 90%",
-        icon: Target,
-        color: "text-amber-600",
-        bg: "bg-amber-50",
-    },
-]
-
-const riskDistribution = [
-    { name: "Low Risk", value: 65, color: "oklch(0.5 0.1 190)" },
-    { name: "Medium Risk", value: 25, color: "oklch(0.7 0.15 80)" },
-    { name: "High Risk", value: 10, color: "oklch(0.6 0.2 25)" },
-]
-
-const chpPerformance = [
-    { name: "Jane Wanjiku", subcounty: "Kibera Sub-county", performance: "92%", clients: 45, screenings: 23 },
-    { name: "Peter Ochieng", subcounty: "Mathare Sub-county", performance: "88%", clients: 38, screenings: 19 },
-]
-
-// Recent activity is now handled by RecentActivityFeed component
-
 import { useApi } from "@/hooks/use-api"
 import dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime"
@@ -117,8 +66,6 @@ export default function DashboardPage() {
 
     const chpPerformance = dashboardData?.chpPerformance || []
 
-    // Recent activities are now handled by RecentActivityFeed
-
     const priorityAlerts = alertData?.results?.map((s: any) => ({
         title: 'High Risk',
         message: `Urgent follow-up required for ${s.client.firstName} ${s.client.lastName} (ID: ${s.client.id})`,
@@ -127,19 +74,11 @@ export default function DashboardPage() {
 
     return (
         <DashboardShell title="Analytics Dashboard" subtitle="SCREEN-IT">
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-0 md:gap-6 mb-8 overflow-hidden rounded-2xl border border-border/50 md:border-none md:rounded-none bg-card md:bg-transparent shadow-sm md:shadow-none">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-0 md:gap-6 mb-8 overflow-hidden rounded-2xl border border-border/50 md:border-none md:rounded-none bg-card md:bg-transparent md:border-none">
                 {stats.map((stat: any, index: number) => (
-                    <div
-                        key={stat.title}
-                        className={`p-5 md:p-6 md:bg-card md:rounded-2xl md:shadow-sm transition-all hover:shadow-md border-border/50 
-                            ${index % 2 === 0 ? "border-r" : ""} 
-                            ${index < 2 ? "border-b" : ""} 
-                            md:border-none`}
-                    >
+                    <div key={stat.title} className={`p-5 md:p-6 md:bg-card md:rounded-2xl transition-all border-border/50 ${index % 2 === 0 ? "border-r" : ""} ${index < 2 ? "border-b" : ""} md:border-none`}>
                         <div className="flex items-center justify-between mb-2">
-                            <span className="text-2xl md:text-3xl lg:text-4xl font-black text-foreground">
-                                {stat.value}
-                            </span>
+                            <span className="text-2xl md:text-3xl lg:text-4xl font-black text-foreground">{stat.value}</span>
                             <div className={`${stat.bg} ${stat.color} p-2 rounded-lg md:rounded-xl`}>
                                 <stat.icon className="h-4 w-4 md:h-6 md:w-6" />
                             </div>
@@ -151,7 +90,7 @@ export default function DashboardPage() {
             </div>
 
             <div className="grid gap-6 md:grid-cols-2 mb-6">
-                <Card className="border-none h-full bg-card shadow-sm">
+                <Card className="border-none h-full bg-card">
                     <CardHeader>
                         <CardTitle className="text-lg font-bold text-foreground">Risk Distribution</CardTitle>
                     </CardHeader>
@@ -167,7 +106,13 @@ export default function DashboardPage() {
                                         <span className="text-sm font-bold text-foreground">{item.value}%</span>
                                     </div>
                                     <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
-                                        <div className="h-full rounded-full" style={{ width: `${item.value}%`, backgroundColor: item.color }}></div>
+                                        <div 
+                                            className="h-full rounded-full" 
+                                            style={{ 
+                                                width: `${item.value}%`, 
+                                                backgroundColor: item.color 
+                                            }}
+                                        ></div>
                                     </div>
                                 </div>
                             ))}
@@ -175,7 +120,7 @@ export default function DashboardPage() {
                     </CardContent>
                 </Card>
 
-                <Card className="border-none h-full bg-card shadow-sm">
+                <Card className="border-none h-full bg-card">
                     <CardHeader className="flex flex-row items-center justify-between">
                         <CardTitle className="text-lg font-bold text-foreground flex items-center gap-2">
                             <AlertTriangle className="h-5 w-5 text-amber-500" />
@@ -187,8 +132,12 @@ export default function DashboardPage() {
                             priorityAlerts.map((alert: any, i: number) => (
                                 <div key={i} className="flex gap-4">
                                     <div className={`flex-1 p-4 ${alert.type === 'high' ? 'bg-red-500/10 border-red-500' : 'bg-primary/10 border-primary'} border-l-4 rounded-none transition-colors`}>
-                                        <h4 className={`text-xs font-bold ${alert.type === 'high' ? 'text-red-500' : 'text-primary'} mb-1`}>{alert.title}</h4>
-                                        <p className={`text-[10px] ${alert.type === 'high' ? 'text-red-500/80' : 'text-primary/80'} font-medium`}>{alert.message}</p>
+                                        <h4 className={`text-xs font-bold ${alert.type === 'high' ? 'text-red-500' : 'text-primary'} mb-1`}>
+                                            {alert.title}
+                                        </h4>
+                                        <p className={`text-[10px] ${alert.type === 'high' ? 'text-red-500/80' : 'text-primary/80'} font-medium`}>
+                                            {alert.message}
+                                        </p>
                                     </div>
                                 </div>
                             ))
@@ -203,7 +152,7 @@ export default function DashboardPage() {
             </div>
 
             <div className="grid gap-6 md:grid-cols-2">
-                <Card className="border-none h-full bg-card shadow-sm">
+                <Card className="border-none h-full bg-card">
                     <CardHeader>
                         <CardTitle className="text-lg font-bold text-foreground">CHP Performance Overview</CardTitle>
                     </CardHeader>
@@ -238,7 +187,7 @@ export default function DashboardPage() {
                     </CardContent>
                 </Card>
 
-                <Card className="border-none h-full bg-card shadow-sm">
+                <Card className="border-none h-full bg-card">
                     <CardHeader>
                         <CardTitle className="text-lg font-bold text-foreground">Recent Activity</CardTitle>
                     </CardHeader>

@@ -4,17 +4,34 @@ import { useApi } from "@/hooks/use-api"
 import DashboardShell from "@/components/dashboard-shell"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import {
-    Activity, ArrowLeft, Calendar, Loader2, Phone, User, Users,
-    Trash2, PlayCircle, PauseCircle, Key, Edit, Save, XCircle, UserPlus,
-    ShieldAlert, Monitor, LogOut, Mail, Clock, ClipboardList,
-    CheckCircle2, AlertCircle, FileText
+import { 
+    Activity, 
+    ArrowLeft, 
+    Calendar, 
+    Loader2, 
+    Phone, 
+    User, 
+    Users, 
+    Trash2, 
+    PlayCircle, 
+    PauseCircle, 
+    Key, 
+    Edit, 
+    Save, 
+    XCircle, 
+    UserPlus, 
+    ShieldAlert, 
+    Monitor, 
+    LogOut, 
+    Mail, 
+    Clock, 
+    ClipboardList, 
+    CheckCircle2, 
+    AlertCircle, 
+    FileText 
 } from "lucide-react"
 import dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime"
-
-dayjs.extend(relativeTime)
-
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
@@ -24,63 +41,54 @@ import { useToast } from "@/hooks/use-toast"
 import { useState, useEffect } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { DataTable } from "@/components/data-table"
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+import { 
+    Select, 
+    SelectContent, 
+    SelectItem, 
+    SelectTrigger, 
+    SelectValue 
 } from "@/components/ui/select"
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
+import { 
+    AlertDialog, 
+    AlertDialogAction, 
+    AlertDialogCancel, 
+    AlertDialogContent, 
+    AlertDialogDescription, 
+    AlertDialogFooter, 
+    AlertDialogHeader, 
+    AlertDialogTitle 
 } from "@/components/ui/alert-dialog"
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
+import { 
+    Dialog, 
+    DialogContent, 
+    DialogDescription, 
+    DialogFooter, 
+    DialogHeader, 
+    DialogTitle, 
+    DialogTrigger 
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 
-// Helper function to parse user agent
+dayjs.extend(relativeTime)
+
+// Helper to parse user agent
 const parseUserAgent = (userAgent: string) => {
     if (!userAgent) return "Unknown Device"
-
+    
     // Extract browser
     let browser = "Unknown Browser"
-    if (userAgent.includes("Chrome") && !userAgent.includes("Edg")) {
-        browser = "Chrome"
-    } else if (userAgent.includes("Firefox")) {
-        browser = "Firefox"
-    } else if (userAgent.includes("Safari") && !userAgent.includes("Chrome")) {
-        browser = "Safari"
-    } else if (userAgent.includes("Edg")) {
-        browser = "Edge"
-    }
+    if (userAgent.includes("Chrome") && !userAgent.includes("Edg")) { browser = "Chrome" }
+    else if (userAgent.includes("Firefox")) { browser = "Firefox" }
+    else if (userAgent.includes("Safari") && !userAgent.includes("Chrome")) { browser = "Safari" }
+    else if (userAgent.includes("Edg")) { browser = "Edge" }
 
     // Extract OS
     let os = ""
-    if (userAgent.includes("Windows")) {
-        os = "Windows"
-    } else if (userAgent.includes("Mac OS")) {
-        os = "macOS"
-    } else if (userAgent.includes("Linux")) {
-        os = "Linux"
-    } else if (userAgent.includes("Android")) {
-        os = "Android"
-    } else if (userAgent.includes("iOS")) {
-        os = "iOS"
-    }
+    if (userAgent.includes("Windows")) { os = "Windows" }
+    else if (userAgent.includes("Mac OS")) { os = "macOS" }
+    else if (userAgent.includes("Linux")) { os = "Linux" }
+    else if (userAgent.includes("Android")) { os = "Android" }
+    else if (userAgent.includes("iOS")) { os = "iOS" }
 
     return os ? `${browser} on ${os}` : browser
 }
@@ -103,12 +111,11 @@ export default function SystemUserDetailClient({ id }: { id: string }) {
     const [passwordForm, setPasswordForm] = useState({ password: '', confirmPassword: '' })
     const [pendingRole, setPendingRole] = useState<string | null>(null)
     const [isSubmitting, setIsSubmitting] = useState(false)
-
     const { toast } = useToast()
 
     const isInvalidId = !id || id === "undefined"
     const { data: userData, isLoading: userLoading, refetch: refetchUser } = useApi<any>(isInvalidId ? null : `/auth/admin/get-user?id=${id}`)
-
+    
     // Auth user response usually has 'user' property or is the user itself depending on better-auth response
     const user = userData?.user || userData
 
@@ -142,6 +149,7 @@ export default function SystemUserDetailClient({ id }: { id: string }) {
     const { data: referralData, isLoading: referralsLoading } = useApi<any>(isInvalidId || !chpId || activeTab !== 'referrals' ? null : `/referrals?providerId=${chpId}&${queryParams}${referralStatusFilter !== 'all' ? `&status=${referralStatusFilter}` : ""}`)
     const { data: clientData, isLoading: clientsLoading } = useApi<any>(isInvalidId || !chpId || activeTab !== 'clients' ? null : `/clients?createdById=${chpId}&${queryParams}${clientRiskFilter !== 'all' ? `&risk=${clientRiskFilter}` : ""}`)
     const { data: followUpData, isLoading: followUpsLoading } = useApi<any>(isInvalidId || !chpId || activeTab !== 'followups' ? null : `/follow-up?providerId=${chpId}&${queryParams}${followUpCategoryFilter !== 'all' ? `&category=${followUpCategoryFilter}` : ""}${followUpPriorityFilter !== 'all' ? `&priority=${followUpPriorityFilter}` : ""}`)
+
     // Sessions data - using POST endpoint
     const [sessionsData, setSessionsData] = useState<any>(null)
     const [sessionsLoading, setSessionsLoading] = useState(false)
@@ -181,12 +189,12 @@ export default function SystemUserDetailClient({ id }: { id: string }) {
                 method: 'POST',
                 body: JSON.stringify({ userId: id })
             })
-                .then((data) => setSessionsData(data?.sessions || []))
-                .catch((error) => {
-                    console.error('Failed to fetch sessions:', error)
-                    setSessionsData([])
-                })
-                .finally(() => setSessionsLoading(false))
+            .then((data) => setSessionsData(data?.sessions || []))
+            .catch((error) => {
+                console.error('Failed to fetch sessions:', error)
+                setSessionsData([])
+            })
+            .finally(() => setSessionsLoading(false))
         }
     }, [activeTab, id, isInvalidId])
 
@@ -274,6 +282,7 @@ export default function SystemUserDetailClient({ id }: { id: string }) {
             })
             return
         }
+
         setIsSubmitting(true)
         try {
             await apiRequest(`/auth/admin/set-user-password`, {
@@ -375,12 +384,14 @@ export default function SystemUserDetailClient({ id }: { id: string }) {
     const isChp = user.role === 'chp'
 
     return (
-        <DashboardShell title={`${isChp ? 'CHP' : 'Admin'} Detail`} subtitle={user.name || user.email}>
+        <DashboardShell 
+            title={`${isChp ? 'CHP' : 'Admin'} Detail`} 
+            subtitle={user.name || user.email}
+        >
             <div className="mb-6">
                 <Link href="/users">
                     <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground hover:text-foreground transition-colors group">
-                        <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
-                        Back to User Management
+                        <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" /> Back to User Management
                     </Button>
                 </Link>
             </div>
@@ -388,28 +399,31 @@ export default function SystemUserDetailClient({ id }: { id: string }) {
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                 {/* Left Column: Profile Card */}
                 <div className="lg:col-span-1 space-y-4">
-                    <Card className="border border-border/50 bg-card shadow-sm overflow-hidden flex flex-col items-center p-4 text-center">
+                    <Card className="border border-border/50 bg-card overflow-hidden flex flex-col items-center p-4 text-center">
                         <div className="relative mb-3">
-                            <div className="w-20 h-20 rounded-full bg-emerald-50 dark:bg-emerald-950/20 flex items-center justify-center border-4 border-white dark:border-card shadow-md">
+                            <div className="w-20 h-20 rounded-full bg-emerald-50 dark:bg-emerald-950/20 flex items-center justify-center border-4 border-white dark:border-card ">
                                 <Activity className="h-8 w-8 text-emerald-500" />
                             </div>
                             <div className="absolute -bottom-1 -right-1 h-5 w-5 bg-emerald-500 rounded-full border-2 border-white dark:border-card flex items-center justify-center">
                                 <div className="h-1.5 w-1.5 bg-white rounded-full animate-pulse" />
                             </div>
                         </div>
-
+                        
                         <div className="flex items-center gap-2 mb-0.5">
                             <h2 className="text-lg font-bold text-foreground">{user.name || "System User"}</h2>
-                            <Button
-                                variant="ghost"
-                                size="icon"
+                            <Button 
+                                variant="ghost" 
+                                size="icon" 
                                 className="h-5 w-5 text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-full"
                                 onClick={() => setIsEditDialogOpen(true)}
                             >
                                 <Edit className="h-3 w-3" />
                             </Button>
                         </div>
-                        <Badge variant="outline" className="bg-emerald-50/50 dark:bg-emerald-950/10 text-emerald-600 border-emerald-100 dark:border-emerald-900/30 font-bold px-2.5 py-0.5 rounded-full text-[10px] uppercase tracking-wider mb-4">
+                        <Badge 
+                            variant="outline" 
+                            className="bg-emerald-50/50 dark:bg-emerald-950/10 text-emerald-600 border-emerald-100 dark:border-emerald-900/30 font-bold px-2.5 py-0.5 rounded-full text-[10px] uppercase tracking-wider mb-4"
+                        >
                             {isChp ? 'Community Health Provider' : 'System Administrator'}
                         </Badge>
 
@@ -417,15 +431,15 @@ export default function SystemUserDetailClient({ id }: { id: string }) {
                         <div className="w-full grid grid-cols-3 gap-2 mb-4 bg-muted/30 p-1.5 rounded-xl border border-border/50">
                             <div className="flex flex-col items-center py-1.5 px-1">
                                 <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight mb-0.5">Clients</span>
-                                <span className="text-base font-black text-foreground">{chpInfo?.clients?.length || 12}</span>
+                                <span className="text-base font-black text-foreground">{chpInfo?.clients?.length || 0}</span>
                             </div>
                             <div className="flex flex-col items-center py-1.5 px-1 border-x border-border/50">
                                 <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight mb-0.5">Screenings</span>
-                                <span className="text-base font-black text-foreground">{screenings?.totalCount || screenings?.results?.length || 8}</span>
+                                <span className="text-base font-black text-foreground">{screenings?.totalCount || screenings?.results?.length || 0}</span>
                             </div>
                             <div className="flex flex-col items-center py-1.5 px-1">
                                 <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight mb-0.5">Referrals</span>
-                                <span className="text-base font-black text-foreground">5</span>
+                                <span className="text-base font-black text-foreground">{referralData?.totalCount || 0}</span>
                             </div>
                         </div>
 
@@ -435,7 +449,7 @@ export default function SystemUserDetailClient({ id }: { id: string }) {
                                 <div className="p-1.5 rounded-lg bg-muted/50 group-hover:bg-primary/5 group-hover:text-primary transition-colors">
                                     <Phone className="h-3.5 w-3.5" />
                                 </div>
-                                <span className="font-medium text-xs">{user.phoneNumber || '+254 700 123 456'}</span>
+                                <span className="font-medium text-xs">{user.phoneNumber || 'N/A'}</span>
                             </div>
                             <div className="flex items-center gap-2 text-sm text-muted-foreground group cursor-default">
                                 <div className="p-1.5 rounded-lg bg-muted/50 group-hover:bg-primary/5 group-hover:text-primary transition-colors">
@@ -449,44 +463,40 @@ export default function SystemUserDetailClient({ id }: { id: string }) {
                                 </div>
                                 <span className="font-medium text-xs">Joined {dayjs(user.createdAt).format('MMM D, YYYY')}</span>
                             </div>
-
                             <div className="pt-2 flex flex-col gap-1.5">
-                                <Button
-                                    variant="outline"
+                                <Button 
+                                    variant="outline" 
                                     className="w-full justify-start gap-2 font-bold rounded-xl border-border/60 hover:bg-primary/5 hover:text-primary hover:border-primary/20 h-9 text-xs"
                                     onClick={() => setIsPasswordDialogOpen(true)}
                                 >
-                                    <Key className="h-3.5 w-3.5" />
-                                    Change Password
+                                    <Key className="h-3.5 w-3.5" /> Change Password
                                 </Button>
-
                                 {!isSelf && (
                                     <>
-                                        <Button
-                                            variant="outline"
+                                        <Button 
+                                            variant="outline" 
                                             onClick={() => setIsStatusDialogOpen(true)}
                                             className="w-full justify-start gap-2 font-bold rounded-xl border-border/60 hover:bg-amber-50 text-amber-700 hover:border-amber-200 h-9 text-xs"
                                         >
                                             <PauseCircle className="h-3.5 w-3.5" />
                                             {user?.banned ? 'Activate Account' : 'Deactivate Account'}
                                         </Button>
-
-                                        <Button
-                                            variant="outline"
+                                        <Button 
+                                            variant="outline" 
                                             className="w-full justify-start gap-2 font-bold rounded-xl border-border/60 hover:bg-primary/5 hover:text-primary hover:border-primary/20 h-9 text-xs"
-                                            onClick={() => { setPendingRole(user.role === 'admin' ? 'chp' : 'admin'); setIsRoleDialogOpen(true); }}
+                                            onClick={() => {
+                                                setPendingRole(user.role === 'admin' ? 'chp' : 'admin');
+                                                setIsRoleDialogOpen(true);
+                                            }}
                                         >
-                                            <ShieldAlert className="h-3.5 w-3.5" />
-                                            Update Role
+                                            <ShieldAlert className="h-3.5 w-3.5" /> Update Role
                                         </Button>
-
-                                        <Button
-                                            variant="outline"
+                                        <Button 
+                                            variant="outline" 
                                             onClick={() => setIsDeleteDialogOpen(true)}
                                             className="w-full justify-start gap-2 font-bold rounded-xl border-rose-100 bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white hover:border-rose-600 transition-all"
                                         >
-                                            <Trash2 className="h-4 w-4" />
-                                            Delete Account
+                                            <Trash2 className="h-4 w-4" /> Delete Account
                                         </Button>
                                     </>
                                 )}
@@ -497,8 +507,7 @@ export default function SystemUserDetailClient({ id }: { id: string }) {
 
                 {/* Right Column: Content Area */}
                 <div className="lg:col-span-3 space-y-8">
-                    {/* Top Section: Activity Tabs */}
-                    <Card className="border-none shadow-none bg-transparent">
+                    <Card className="border-none -none bg-transparent">
                         <Tabs defaultValue="activities" value={activeTab} onValueChange={onTabChange} className="w-full">
                             <TabsList variant="line" className="bg-transparent border-b border-border/50 w-full justify-start h-auto p-0 gap-8">
                                 <TabsTrigger value="activities" className="data-[state=active]:bg-transparent border-none rounded-none px-0 py-3 h-auto gap-2 group">
@@ -531,6 +540,7 @@ export default function SystemUserDetailClient({ id }: { id: string }) {
                                     <Badge variant="outline" className="bg-rose-50 text-rose-600 border-rose-100 rounded-full px-1.5 py-0 h-4 text-[10px] min-w-[1.25rem] flex justify-center">{sessionsData?.length || 0}</Badge>
                                 </TabsTrigger>
                             </TabsList>
+
                             <TabsContent value="activities" className="mt-4">
                                 <DataTable
                                     columns={[
@@ -538,15 +548,7 @@ export default function SystemUserDetailClient({ id }: { id: string }) {
                                             header: "Action",
                                             accessorKey: "action",
                                             cell: (item: any) => (
-                                                <Badge
-                                                    variant="outline"
-                                                    className={`
-                                                        font-bold border-none px-2 rounded-full text-[10px] uppercase tracking-wider
-                                                        ${item.action === 'create' ? 'bg-emerald-500/10 text-emerald-600' :
-                                                            item.action === 'update' ? 'bg-blue-500/10 text-blue-600' :
-                                                                'bg-amber-500/10 text-amber-600'}
-                                                    `}
-                                                >
+                                                <Badge variant="outline" className={`font-bold border-none px-2 rounded-full text-[10px] uppercase tracking-wider ${item.action === 'create' ? 'bg-emerald-500/10 text-emerald-600' : item.action === 'update' ? 'bg-blue-500/10 text-blue-600' : 'bg-amber-500/10 text-amber-600'}`}>
                                                     {item.action}
                                                 </Badge>
                                             ),
@@ -557,15 +559,7 @@ export default function SystemUserDetailClient({ id }: { id: string }) {
                                             accessorKey: "resource",
                                             cell: (item: any) => (
                                                 <div className="flex flex-col gap-1">
-                                                    <Badge
-                                                        variant="outline"
-                                                        className={`
-                                                            w-fit font-black border-none px-2 rounded-md text-[9px] uppercase tracking-widest
-                                                            ${item.resource === 'screening' ? 'bg-primary/10 text-primary' :
-                                                                item.resource === 'client' ? 'bg-orange-500/10 text-orange-600' :
-                                                                    'bg-slate-500/10 text-slate-600'}
-                                                        `}
-                                                    >
+                                                    <Badge variant="outline" className={`w-fit font-black border-none px-2 rounded-md text-[9px] uppercase tracking-widest ${item.resource === 'screening' ? 'bg-primary/10 text-primary' : item.resource === 'client' ? 'bg-orange-500/10 text-orange-600' : 'bg-slate-500/10 text-slate-600'}`}>
                                                         {item.resource}
                                                     </Badge>
                                                     <span className="text-[9px] font-mono text-muted-foreground/40 font-bold tabular-nums">
@@ -593,7 +587,7 @@ export default function SystemUserDetailClient({ id }: { id: string }) {
                                                                 </div>
                                                             )}
                                                             {metadata.clientId && (
-                                                                <Link
+                                                                <Link 
                                                                     href={`/users/clients/${metadata.clientId}`}
                                                                     className="text-[10px] font-bold text-primary hover:underline flex items-center gap-1 bg-primary/5 px-2 py-0.5 rounded-md border border-primary/20"
                                                                 >
@@ -602,7 +596,7 @@ export default function SystemUserDetailClient({ id }: { id: string }) {
                                                                 </Link>
                                                             )}
                                                             {item.resourceId && item.resource === 'screening' && (
-                                                                <Link
+                                                                <Link 
                                                                     href={`/screening/${item.resourceId}`}
                                                                     className="text-[10px] font-bold text-emerald-600 hover:underline flex items-center gap-1 bg-emerald-500/5 px-2 py-0.5 rounded-md border border-emerald-500/20"
                                                                 >
@@ -668,24 +662,21 @@ export default function SystemUserDetailClient({ id }: { id: string }) {
                                             </Select>
                                             <div className="flex items-center gap-2 border-2 rounded-md px-2 h-10 bg-background">
                                                 <Calendar className="h-4 w-4 text-muted-foreground" />
-                                                <input
-                                                    type="date"
-                                                    value={dateFrom}
+                                                <input 
+                                                    type="date" 
+                                                    value={dateFrom} 
                                                     onChange={(e) => { setDateFrom(e.target.value); setPage(1); }}
                                                     className="bg-transparent border-none text-[10px] font-bold focus:outline-none uppercase w-[100px]"
                                                 />
-                                                <span className="text-muted-foreground font-black text-[10px]">—</span>
-                                                <input
-                                                    type="date"
-                                                    value={dateTo}
+                                                <span className="text-muted-foreground font-black text-[10px]">\u2014</span>
+                                                <input 
+                                                    type="date" 
+                                                    value={dateTo} 
                                                     onChange={(e) => { setDateTo(e.target.value); setPage(1); }}
                                                     className="bg-transparent border-none text-[10px] font-bold focus:outline-none uppercase w-[100px]"
                                                 />
                                                 {(dateFrom || dateTo) && (
-                                                    <button
-                                                        onClick={() => { setDateFrom(""); setDateTo(""); setPage(1); }}
-                                                        className="ml-1 p-0.5 hover:bg-muted rounded-full"
-                                                    >
+                                                    <button onClick={() => { setDateFrom(""); setDateTo(""); setPage(1); }} className="ml-1 p-0.5 hover:bg-muted rounded-full">
                                                         <XCircle className="h-3 w-3 text-muted-foreground" />
                                                     </button>
                                                 )}
@@ -694,6 +685,7 @@ export default function SystemUserDetailClient({ id }: { id: string }) {
                                     }
                                 />
                             </TabsContent>
+
                             {chpInfo && <TabsContent value="referrals">
                                 <DataTable
                                     columns={[
@@ -701,7 +693,7 @@ export default function SystemUserDetailClient({ id }: { id: string }) {
                                             header: "Client",
                                             accessorKey: "screening.client.firstName",
                                             cell: (item: any) => (
-                                                <Link
+                                                <Link 
                                                     href={`/users/clients/${item.screening?.clientId}`}
                                                     className="flex flex-col hover:underline group max-w-[180px]"
                                                 >
@@ -727,7 +719,7 @@ export default function SystemUserDetailClient({ id }: { id: string }) {
                                                     LOW_RISK: "text-emerald-600 bg-emerald-50 border-emerald-100"
                                                 };
                                                 return (
-                                                    <Link
+                                                    <Link 
                                                         href={`/screening/${item.screening?.id}`}
                                                         className="flex flex-col gap-1 hover:opacity-80 group"
                                                     >
@@ -748,7 +740,7 @@ export default function SystemUserDetailClient({ id }: { id: string }) {
                                             cell: (item: any) => (
                                                 <div className="flex flex-col max-w-[200px]">
                                                     <span className="font-semibold text-foreground/80 truncate">{item.healthFacility?.name}</span>
-                                                    <span className="text-[10px] text-muted-foreground truncate">{item.healthFacility?.county} · {item.healthFacility?.subcounty}</span>
+                                                    <span className="text-[10px] text-muted-foreground truncate">{item.healthFacility?.county} \u00b7 {item.healthFacility?.subcounty}</span>
                                                 </div>
                                             ),
                                             sortable: true
@@ -809,6 +801,7 @@ export default function SystemUserDetailClient({ id }: { id: string }) {
                                     }
                                 />
                             </TabsContent>}
+
                             {chpInfo && <TabsContent value="clients">
                                 <DataTable
                                     columns={[
@@ -848,7 +841,7 @@ export default function SystemUserDetailClient({ id }: { id: string }) {
                                             cell: (item: any) => (
                                                 <div className="flex flex-col">
                                                     <span className="text-xs font-medium text-foreground/80">{item.county}</span>
-                                                    <span className="text-[10px] text-muted-foreground">{item.subcounty} · {item.ward}</span>
+                                                    <span className="text-[10px] text-muted-foreground">{item.subcounty} \u00b7 {item.ward}</span>
                                                 </div>
                                             ),
                                             sortable: true
@@ -921,6 +914,7 @@ export default function SystemUserDetailClient({ id }: { id: string }) {
                                     }
                                 />
                             </TabsContent>}
+
                             {chpInfo && <TabsContent value="followups">
                                 <DataTable
                                     columns={[
@@ -937,7 +931,7 @@ export default function SystemUserDetailClient({ id }: { id: string }) {
                                                             {item.client?.firstName} {item.client?.lastName}
                                                         </span>
                                                         <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-tight">
-                                                            {item.category.replace(/_/g, ' ')}
+                                                            {item.category?.replace(/_/g, ' ')}
                                                         </span>
                                                     </div>
                                                 </div>
@@ -1038,6 +1032,7 @@ export default function SystemUserDetailClient({ id }: { id: string }) {
                                     }
                                 />
                             </TabsContent>}
+
                             <TabsContent value="sessions">
                                 <DataTable
                                     columns={[
@@ -1047,7 +1042,7 @@ export default function SystemUserDetailClient({ id }: { id: string }) {
                                             cell: (item: any) => (
                                                 <div className="flex flex-col max-w-[240px]" title={item.userAgent}>
                                                     <span className="font-bold text-foreground truncate">{parseUserAgent(item.userAgent)}</span>
-                                                    <span className="text-[10px] text-muted-foreground truncate">{item.ipAddress || "No IP"} · {dayjs(item.createdAt).fromNow()}</span>
+                                                    <span className="text-[10px] text-muted-foreground truncate">{item.ipAddress || "No IP"} \u00b7 {dayjs(item.createdAt).fromNow()}</span>
                                                 </div>
                                             ),
                                             sortable: true,
@@ -1087,16 +1082,14 @@ export default function SystemUserDetailClient({ id }: { id: string }) {
                                     setSortBy={setSortBy}
                                     sortOrder={sortOrder}
                                     setSortOrder={setSortOrder}
-                                // Sessions use local data length for total count as it is not a paginated backend yet, but sortBy works
                                 />
                             </TabsContent>
                         </Tabs>
                     </Card>
-
                 </div>
             </div>
 
-            {/* Modals from original code are kept below */}
+            {/* Modals */}
             <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
                 <AlertDialogContent className="bg-background border-border">
                     <AlertDialogHeader>
@@ -1107,7 +1100,11 @@ export default function SystemUserDetailClient({ id }: { id: string }) {
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel disabled={isSubmitting}>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={(e) => { e.preventDefault(); handleDelete(); }} className="bg-destructive text-destructive-foreground hover:bg-destructive/90" disabled={isSubmitting}>
+                        <AlertDialogAction 
+                            onClick={(e) => { e.preventDefault(); handleDelete(); }} 
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            disabled={isSubmitting}
+                        >
                             {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Trash2 className="h-4 w-4 mr-2" />}
                             Delete User
                         </AlertDialogAction>
@@ -1120,15 +1117,19 @@ export default function SystemUserDetailClient({ id }: { id: string }) {
                     <AlertDialogHeader>
                         <AlertDialogTitle>{user?.banned ? 'Activate User Account?' : 'Deactivate User Account?'}</AlertDialogTitle>
                         <AlertDialogDescription>
-                            {user?.banned
-                                ? `Are you sure you want to activate ${user.name || user.email}'s account? They will be able to log in again.`
+                            {user?.banned 
+                                ? `Are you sure you want to activate ${user.name || user.email}'s account? They will be able to log in again.` 
                                 : `Are you sure you want to deactivate ${user.name || user.email}'s account? They will be immediately logged out and blocked from logging in.`
                             }
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel disabled={isSubmitting}>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={(e) => { e.preventDefault(); handleToggleStatus(); }} className={user?.banned ? "bg-primary text-primary-foreground" : "bg-amber-600 text-white hover:bg-amber-700"} disabled={isSubmitting}>
+                        <AlertDialogAction 
+                            onClick={(e) => { e.preventDefault(); handleToggleStatus(); }} 
+                            className={user?.banned ? "bg-primary text-primary-foreground" : "bg-amber-600 text-white hover:bg-amber-700"}
+                            disabled={isSubmitting}
+                        >
                             {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : (user?.banned ? <PlayCircle className="h-4 w-4 mr-2" /> : <PauseCircle className="h-4 w-4 mr-2" />)}
                             {user?.banned ? 'Activate' : 'Deactivate'}
                         </AlertDialogAction>
@@ -1147,22 +1148,22 @@ export default function SystemUserDetailClient({ id }: { id: string }) {
                     <form onSubmit={handleChangePassword} className="space-y-4 py-4">
                         <div className="space-y-2">
                             <label className="text-sm font-bold text-muted-foreground uppercase tracking-tight">New Password</label>
-                            <Input
-                                type="password"
-                                placeholder="Enter new password"
-                                required
-                                value={passwordForm.password}
+                            <Input 
+                                type="password" 
+                                placeholder="Enter new password" 
+                                required 
+                                value={passwordForm.password} 
                                 onChange={(e) => setPasswordForm(prev => ({ ...prev, password: e.target.value }))}
                                 className="bg-muted/50 border-none focus-visible:ring-primary/20"
                             />
                         </div>
                         <div className="space-y-2">
                             <label className="text-sm font-bold text-muted-foreground uppercase tracking-tight">Confirm Password</label>
-                            <Input
-                                type="password"
-                                placeholder="Confirm new password"
-                                required
-                                value={passwordForm.confirmPassword}
+                            <Input 
+                                type="password" 
+                                placeholder="Confirm new password" 
+                                required 
+                                value={passwordForm.confirmPassword} 
                                 onChange={(e) => setPasswordForm(prev => ({ ...prev, confirmPassword: e.target.value }))}
                                 className="bg-muted/50 border-none focus-visible:ring-primary/20"
                             />
@@ -1189,32 +1190,32 @@ export default function SystemUserDetailClient({ id }: { id: string }) {
                     <form onSubmit={handleEditUser} className="space-y-4 py-4">
                         <div className="space-y-2">
                             <label className="text-sm font-bold text-muted-foreground uppercase tracking-tight">Full Name</label>
-                            <Input
-                                type="text"
-                                placeholder="Full Name"
-                                required
-                                value={editForm.name}
+                            <Input 
+                                type="text" 
+                                placeholder="Full Name" 
+                                required 
+                                value={editForm.name} 
                                 onChange={(e) => setEditForm(prev => ({ ...prev, name: e.target.value }))}
                                 className="bg-muted/50 border-none focus-visible:ring-primary/20"
                             />
                         </div>
                         <div className="space-y-2">
                             <label className="text-sm font-bold text-muted-foreground uppercase tracking-tight">Email Address</label>
-                            <Input
-                                type="email"
-                                placeholder="email@example.com"
-                                required
-                                value={editForm.email}
+                            <Input 
+                                type="email" 
+                                placeholder="email@example.com" 
+                                required 
+                                value={editForm.email} 
                                 onChange={(e) => setEditForm(prev => ({ ...prev, email: e.target.value }))}
                                 className="bg-muted/50 border-none focus-visible:ring-primary/20"
                             />
                         </div>
                         <div className="space-y-2">
                             <label className="text-sm font-bold text-muted-foreground uppercase tracking-tight">Phone Number</label>
-                            <Input
-                                type="tel"
-                                placeholder="+254..."
-                                value={editForm.phoneNumber}
+                            <Input 
+                                type="tel" 
+                                placeholder="+254..." 
+                                value={editForm.phoneNumber} 
                                 onChange={(e) => setEditForm(prev => ({ ...prev, phoneNumber: e.target.value }))}
                                 className="bg-muted/50 border-none focus-visible:ring-primary/20"
                             />
@@ -1240,7 +1241,11 @@ export default function SystemUserDetailClient({ id }: { id: string }) {
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel disabled={isSubmitting}>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={(e) => { e.preventDefault(); handleSetRole(); }} className="bg-primary text-primary-foreground" disabled={isSubmitting}>
+                        <AlertDialogAction 
+                            onClick={(e) => { e.preventDefault(); handleSetRole(); }} 
+                            className="bg-primary text-primary-foreground"
+                            disabled={isSubmitting}
+                        >
                             {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <UserPlus className="h-4 w-4 mr-2" />}
                             Update Role
                         </AlertDialogAction>
@@ -1258,7 +1263,11 @@ export default function SystemUserDetailClient({ id }: { id: string }) {
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel disabled={isSubmitting}>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={(e) => { e.preventDefault(); handleRevokeSessions(); }} className="bg-amber-600 text-white hover:bg-amber-700" disabled={isSubmitting}>
+                        <AlertDialogAction 
+                            onClick={(e) => { e.preventDefault(); handleRevokeSessions(); }} 
+                            className="bg-amber-600 text-white hover:bg-amber-700"
+                            disabled={isSubmitting}
+                        >
                             {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <LogOut className="h-4 w-4 mr-2" />}
                             Revoke Sessions
                         </AlertDialogAction>

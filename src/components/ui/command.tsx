@@ -3,120 +3,122 @@
 import * as React from "react"
 import { Command as CommandPrimitive } from "cmdk"
 import { SearchIcon } from "lucide-react"
-
 import { cn } from "@/lib/utils"
 
 function Command({
-    className,
-    ...props
+  className,
+  ...props
 }: React.ComponentProps<typeof CommandPrimitive>) {
-    return (
-        <CommandPrimitive
-            data-slot="command"
-            className={cn(
-                "bg-popover text-popover-foreground flex h-full w-full flex-col overflow-hidden rounded-none",
-                className
-            )}
-            {...props}
-        />
-    )
+  return (
+    <CommandPrimitive
+      data-slot="command"
+      className={cn(
+        "bg-popover text-popover-foreground flex h-full w-full flex-col overflow-hidden rounded-none",
+        className
+      )}
+      {...props}
+    />
+  )
 }
 
 function CommandInput({
-    className,
-    ...props
+  className,
+  ...props
 }: React.ComponentProps<typeof CommandPrimitive.Input>) {
-    return (
-        <div className="flex items-center border-b px-3" data-slot="command-input-wrapper">
-            <SearchIcon className="mr-2 h-4 w-4 shrink-0 opacity-50" />
-            <CommandPrimitive.Input
-                data-slot="command-input"
-                className={cn(
-                    "placeholder:text-muted-foreground flex h-10 w-full rounded-md bg-transparent py-3 text-sm outline-none disabled:cursor-not-allowed disabled:opacity-50",
-                    className
-                )}
-                {...props}
-            />
-        </div>
-    )
+  return (
+    <div
+      className="flex items-center border-b px-3"
+      data-slot="command-input-wrapper"
+    >
+      <SearchIcon className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+      <CommandPrimitive.Input
+        data-slot="command-input"
+        className={cn(
+          "placeholder:text-muted-foreground flex h-10 w-full rounded-md bg-transparent py-3 text-sm outline-none disabled:cursor-not-allowed disabled:opacity-50",
+          className
+        )}
+        {...props}
+      />
+    </div>
+  )
 }
 
 function CommandList({
-    className,
-    ...props
+  className,
+  ...props
 }: React.ComponentProps<typeof CommandPrimitive.List>) {
-    return (
-        <CommandPrimitive.List
-            data-slot="command-list"
-            className={cn("max-h-[300px] overflow-y-auto overflow-x-hidden", className)}
-            {...props}
-        />
-    )
+  return (
+    <CommandPrimitive.List
+      data-slot="command-list"
+      className={cn("max-h-[300px] overflow-y-auto overflow-x-hidden", className)}
+      {...props}
+    />
+  )
 }
 
 function CommandEmpty({
-    ...props
+  ...props
 }: React.ComponentProps<typeof CommandPrimitive.Empty>) {
-    return (
-        <CommandPrimitive.Empty
-            data-slot="command-empty"
-            className="py-6 text-center text-sm"
-            {...props}
-        />
-    )
+  return (
+    <CommandPrimitive.Empty
+      data-slot="command-empty"
+      className="py-6 text-center text-sm"
+      {...props}
+    />
+  )
 }
 
 function CommandGroup({
-    className,
-    ...props
+  className,
+  ...props
 }: React.ComponentProps<typeof CommandPrimitive.Group>) {
-    return (
-        <CommandPrimitive.Group
-            data-slot="command-group"
-            className={cn(
-                "text-foreground [&_[data-slot=command-group-heading]]:text-muted-foreground overflow-hidden p-1 [&_[data-slot=command-group-heading]]:px-2 [&_[data-slot=command-group-heading]]:py-1.5 [&_[data-slot=command-group-heading]]:text-xs [&_[data-slot=command-group-heading]]:font-medium",
-                className
-            )}
-            {...props}
-        />
-    )
+  return (
+    <CommandPrimitive.Group
+      data-slot="command-group"
+      className={cn(
+        "text-foreground [&_[data-slot=command-group-heading]]:text-muted-foreground overflow-hidden p-1 [&_[data-slot=command-group-heading]]:px-2 [&_[data-slot=command-group-heading]]:py-1.5 [&_[data-slot=command-group-heading]]:text-xs [&_[data-slot=command-group-heading]]:font-medium",
+        className
+      )}
+      {...props}
+    />
+  )
 }
 
 function CommandSeparator({
-    className,
-    ...props
+  className,
+  ...props
 }: React.ComponentProps<typeof CommandPrimitive.Separator>) {
-    return (
-        <CommandPrimitive.Separator
-            data-slot="command-separator"
-            className={cn("bg-border -mx-1 h-px", className)}
-            {...props}
-        />
-    )
+  return (
+    <CommandPrimitive.Separator
+      data-slot="command-separator"
+      className={cn("bg-border -mx-1 h-px", className)}
+      {...props}
+    />
+  )
 }
 
 function CommandItem({
-    className,
-    ...props
+  className,
+  ...props
 }: React.ComponentProps<typeof CommandPrimitive.Item>) {
-    return (
-        <CommandPrimitive.Item
-            data-slot="command-item"
-            className={cn(
-                "data-[selected=true]:bg-emerald-50 data-[selected=true]:text-emerald-900 relative flex cursor-default items-center gap-2 rounded-none px-2 py-1.5 text-sm outline-none data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
-                className
-            )}
-            {...props}
-        />
-    )
+  return (
+    <CommandPrimitive.Item
+      data-slot="command-item"
+      className={cn(
+        "data-[selected=true]:bg-emerald-50 data-[selected=true]:text-emerald-900 relative flex cursor-default items-center gap-2 rounded-none px-2 py-1.5 text-sm outline-none data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        className
+      )}
+      {...props}
+    />
+  )
 }
 
 export {
-    Command,
-    CommandInput,
-    CommandList,
-    CommandEmpty,
-    CommandGroup,
-    CommandItem,
-    CommandSeparator,
+  Command,
+  CommandInput,
+  CommandList,
+  CommandEmpty,
+  CommandGroup,
+  CommandItem,
+  CommandSeparator,
 }

@@ -7,23 +7,31 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import {
-    User, Mail, Key, Monitor, Trash2, Loader2,
-    LogOut, AlertCircle, Calendar, Settings
+import { 
+    User, 
+    Mail, 
+    Key, 
+    Monitor, 
+    Trash2, 
+    Loader2, 
+    LogOut, 
+    AlertCircle, 
+    Calendar, 
+    Settings 
 } from "lucide-react"
 import { useSession, signOut } from "@/lib/auth-client"
 import { apiRequest } from "@/lib/api"
 import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
+import { 
+    AlertDialog, 
+    AlertDialogAction, 
+    AlertDialogCancel, 
+    AlertDialogContent, 
+    AlertDialogDescription, 
+    AlertDialogFooter, 
+    AlertDialogHeader, 
+    AlertDialogTitle 
 } from "@/components/ui/alert-dialog"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -90,7 +98,6 @@ export default function ProfilePage() {
             })
             return
         }
-
         setIsUpdatingProfile(true)
         try {
             await apiRequest('/auth/update-user', {
@@ -122,7 +129,6 @@ export default function ProfilePage() {
             })
             return
         }
-
         if (newPassword.length < 8) {
             toast({
                 title: "Validation Error",
@@ -131,7 +137,6 @@ export default function ProfilePage() {
             })
             return
         }
-
         if (newPassword !== confirmPassword) {
             toast({
                 title: "Validation Error",
@@ -140,7 +145,6 @@ export default function ProfilePage() {
             })
             return
         }
-
         setIsChangingPassword(true)
         try {
             await apiRequest('/auth/change-password', {
@@ -247,35 +251,20 @@ export default function ProfilePage() {
 
     const currentSession = (session as any)?.session
 
-    // Helper function to parse user agent
     const parseUserAgent = (userAgent: string) => {
         if (!userAgent) return "Unknown Device"
-
-        // Extract browser
         let browser = "Unknown Browser"
-        if (userAgent.includes("Chrome") && !userAgent.includes("Edg")) {
-            browser = "Chrome"
-        } else if (userAgent.includes("Firefox")) {
-            browser = "Firefox"
-        } else if (userAgent.includes("Safari") && !userAgent.includes("Chrome")) {
-            browser = "Safari"
-        } else if (userAgent.includes("Edg")) {
-            browser = "Edge"
-        }
+        if (userAgent.includes("Chrome") && !userAgent.includes("Edg")) { browser = "Chrome" }
+        else if (userAgent.includes("Firefox")) { browser = "Firefox" }
+        else if (userAgent.includes("Safari") && !userAgent.includes("Chrome")) { browser = "Safari" }
+        else if (userAgent.includes("Edg")) { browser = "Edge" }
 
-        // Extract OS
         let os = ""
-        if (userAgent.includes("Windows")) {
-            os = "Windows"
-        } else if (userAgent.includes("Mac OS")) {
-            os = "macOS"
-        } else if (userAgent.includes("Linux")) {
-            os = "Linux"
-        } else if (userAgent.includes("Android")) {
-            os = "Android"
-        } else if (userAgent.includes("iOS")) {
-            os = "iOS"
-        }
+        if (userAgent.includes("Windows")) { os = "Windows" }
+        else if (userAgent.includes("Mac OS")) { os = "macOS" }
+        else if (userAgent.includes("Linux")) { os = "Linux" }
+        else if (userAgent.includes("Android")) { os = "Android" }
+        else if (userAgent.includes("iOS")) { os = "iOS" }
 
         return os ? `${browser} on ${os}` : browser
     }
@@ -284,7 +273,7 @@ export default function ProfilePage() {
         <DashboardShell title="Account Settings" subtitle="Manage your profile and preferences">
             <div className="grid gap-6 lg:grid-cols-4">
                 {/* Left Sidebar: User Info */}
-                <Card className="border border-border/50 bg-card shadow-sm lg:col-span-1 h-fit">
+                <Card className="border border-border/50 bg-card lg:col-span-1 h-fit">
                     <CardHeader className="pb-4">
                         <CardTitle className="text-lg font-bold text-foreground">{user?.name || "User"}</CardTitle>
                         <CardDescription className="font-semibold text-primary capitalize">{(user as any)?.role || "Guest"}</CardDescription>
@@ -306,9 +295,9 @@ export default function ProfilePage() {
                             <span className="text-foreground font-medium text-xs">Joined {dayjs(user?.createdAt).format('MMM D, YYYY')}</span>
                         </div>
                         <div className="pt-3 border-t border-border/50">
-                            <Button
-                                variant="outline"
-                                className="w-full justify-start gap-2 font-bold rounded-xl border-border/60 hover:bg-destructive/5 hover:text-destructive hover:border-destructive/20 h-9 text-xs"
+                            <Button 
+                                variant="outline" 
+                                className="w-full justify-start gap-2 font-bold rounded-xl border-border/60 hover:bg-destructive/5 hover:text-destructive hover:border-destructive/20 h-9 text-xs" 
                                 onClick={() => setShowLogoutDialog(true)}
                             >
                                 <LogOut className="h-3.5 w-3.5" />
@@ -336,9 +325,8 @@ export default function ProfilePage() {
                             </TabsTrigger>
                         </TabsList>
 
-                        {/* Profile Tab */}
                         <TabsContent value="profile" className="space-y-6">
-                            <Card className="border border-border/50 bg-card shadow-sm">
+                            <Card className="border border-border/50 bg-card ">
                                 <CardHeader>
                                     <CardTitle className="text-base font-bold text-foreground">Personal Information</CardTitle>
                                     <CardDescription>Update your personal details here.</CardDescription>
@@ -346,25 +334,15 @@ export default function ProfilePage() {
                                 <CardContent className="space-y-4">
                                     <div className="space-y-2">
                                         <Label htmlFor="name" className="text-sm font-bold text-foreground">Full Name</Label>
-                                        <Input
-                                            id="name"
-                                            value={name}
-                                            onChange={(e) => setName(e.target.value)}
-                                            className="h-10"
-                                        />
+                                        <Input id="name" value={name} onChange={(e) => setName(e.target.value)} className="h-10" />
                                     </div>
                                     <div className="space-y-2">
                                         <Label htmlFor="email" className="text-sm font-bold text-muted-foreground">Email Address</Label>
-                                        <Input
-                                            id="email"
-                                            value={email}
-                                            disabled
-                                            className="h-10 bg-muted/50 cursor-not-allowed"
-                                        />
+                                        <Input id="email" value={email} disabled className="h-10 bg-muted/50 cursor-not-allowed" />
                                         <p className="text-xs text-muted-foreground">Email cannot be changed at this time.</p>
                                     </div>
-                                    <Button
-                                        onClick={handleUpdateProfile}
+                                    <Button 
+                                        onClick={handleUpdateProfile} 
                                         disabled={isUpdatingProfile}
                                         className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-10 px-6"
                                     >
@@ -374,7 +352,6 @@ export default function ProfilePage() {
                                 </CardContent>
                             </Card>
 
-                            {/* Danger Zone */}
                             <Card className="border border-destructive/50 bg-destructive/5">
                                 <CardHeader>
                                     <CardTitle className="text-base font-bold text-destructive flex items-center gap-2">
@@ -384,8 +361,8 @@ export default function ProfilePage() {
                                     <CardDescription>Irreversible actions that affect your account.</CardDescription>
                                 </CardHeader>
                                 <CardContent>
-                                    <Button
-                                        variant="outline"
+                                    <Button 
+                                        variant="outline" 
                                         onClick={() => setShowDeleteDialog(true)}
                                         className="w-full justify-start gap-2 font-bold border-destructive/50 bg-destructive/10 text-destructive hover:bg-destructive hover:text-destructive-foreground h-10"
                                     >
@@ -396,9 +373,8 @@ export default function ProfilePage() {
                             </Card>
                         </TabsContent>
 
-                        {/* Security Tab */}
                         <TabsContent value="security">
-                            <Card className="border border-border/50 bg-card shadow-sm">
+                            <Card className="border border-border/50 bg-card ">
                                 <CardHeader>
                                     <CardTitle className="text-base font-bold text-foreground">Change Password</CardTitle>
                                     <CardDescription>Update your password and security settings.</CardDescription>
@@ -406,51 +382,51 @@ export default function ProfilePage() {
                                 <CardContent className="space-y-4">
                                     <div className="space-y-2">
                                         <Label htmlFor="currentPassword" className="text-sm font-bold text-foreground">Current Password</Label>
-                                        <Input
-                                            id="currentPassword"
-                                            type="password"
-                                            value={currentPassword}
-                                            onChange={(e) => setCurrentPassword(e.target.value)}
-                                            placeholder="••••••••"
-                                            className="h-10"
+                                        <Input 
+                                            id="currentPassword" 
+                                            type="password" 
+                                            value={currentPassword} 
+                                            onChange={(e) => setCurrentPassword(e.target.value)} 
+                                            placeholder="••••••••" 
+                                            className="h-10" 
                                         />
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div className="space-y-2">
                                             <Label htmlFor="newPassword" className="text-sm font-bold text-foreground">New Password</Label>
-                                            <Input
-                                                id="newPassword"
-                                                type="password"
-                                                value={newPassword}
-                                                onChange={(e) => setNewPassword(e.target.value)}
-                                                placeholder="Min. 8 characters"
-                                                className="h-10"
+                                            <Input 
+                                                id="newPassword" 
+                                                type="password" 
+                                                value={newPassword} 
+                                                onChange={(e) => setNewPassword(e.target.value)} 
+                                                placeholder="Min. 8 characters" 
+                                                className="h-10" 
                                             />
                                         </div>
                                         <div className="space-y-2">
                                             <Label htmlFor="confirmPassword" className="text-sm font-bold text-foreground">Confirm New Password</Label>
-                                            <Input
-                                                id="confirmPassword"
-                                                type="password"
-                                                value={confirmPassword}
-                                                onChange={(e) => setConfirmPassword(e.target.value)}
-                                                placeholder="Retype new password"
-                                                className="h-10"
+                                            <Input 
+                                                id="confirmPassword" 
+                                                type="password" 
+                                                value={confirmPassword} 
+                                                onChange={(e) => setConfirmPassword(e.target.value)} 
+                                                placeholder="Retype new password" 
+                                                className="h-10" 
                                             />
                                         </div>
                                     </div>
                                     <div className="flex items-center space-x-2">
-                                        <Checkbox
-                                            id="revokeOther"
-                                            checked={revokeOtherSessions}
-                                            onCheckedChange={(checked) => setRevokeOtherSessions(checked as boolean)}
+                                        <Checkbox 
+                                            id="revokeOther" 
+                                            checked={revokeOtherSessions} 
+                                            onCheckedChange={(checked) => setRevokeOtherSessions(checked as boolean)} 
                                         />
                                         <Label htmlFor="revokeOther" className="text-sm font-medium cursor-pointer">
                                             Revoke all other sessions after password change
                                         </Label>
                                     </div>
-                                    <Button
-                                        onClick={handleChangePassword}
+                                    <Button 
+                                        onClick={handleChangePassword} 
                                         disabled={isChangingPassword}
                                         className="bg-foreground hover:bg-foreground/90 text-background font-bold h-10 px-6"
                                     >
@@ -461,21 +437,15 @@ export default function ProfilePage() {
                             </Card>
                         </TabsContent>
 
-                        {/* Sessions Tab */}
                         <TabsContent value="sessions">
-                            <Card className="border border-border/50 bg-card shadow-sm">
+                            <Card className="border border-border/50 bg-card ">
                                 <CardHeader>
                                     <div className="flex items-center justify-between">
                                         <div>
                                             <CardTitle className="text-base font-bold text-foreground">Active Sessions</CardTitle>
                                             <CardDescription>Manage your active login sessions.</CardDescription>
                                         </div>
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={handleRevokeAllSessions}
-                                            className="text-xs font-bold"
-                                        >
+                                        <Button variant="outline" size="sm" onClick={handleRevokeAllSessions} className="text-xs font-bold">
                                             Revoke All
                                         </Button>
                                     </div>
@@ -495,10 +465,7 @@ export default function ProfilePage() {
                                             {sessions.map((s) => {
                                                 const isCurrent = s.token === currentSession?.token || s.id === currentSession?.id
                                                 return (
-                                                    <div
-                                                        key={s.id}
-                                                        className="flex items-center justify-between p-3 rounded-lg border border-border/50 bg-muted/30"
-                                                    >
+                                                    <div key={s.id} className="flex items-center justify-between p-3 rounded-lg border border-border/50 bg-muted/30">
                                                         <div className="flex-1">
                                                             <div className="flex items-center gap-2">
                                                                 <p className="text-sm font-bold text-foreground truncate max-w-[200px]">
@@ -515,9 +482,9 @@ export default function ProfilePage() {
                                                             </p>
                                                         </div>
                                                         {!isCurrent && (
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="sm"
+                                                            <Button 
+                                                                variant="ghost" 
+                                                                size="sm" 
                                                                 onClick={() => handleRevokeSession(s.token)}
                                                                 className="text-destructive hover:text-destructive hover:bg-destructive/10 text-xs font-bold"
                                                             >

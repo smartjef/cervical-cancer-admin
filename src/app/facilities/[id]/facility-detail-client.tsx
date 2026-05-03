@@ -8,36 +8,36 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { DataTable } from "@/components/data-table"
 import { useApi } from "@/hooks/use-api"
-import {
-    ArrowLeft,
-    MapPin,
-    Phone,
-    Mail,
-    Building2,
-    Calendar,
-    Activity,
-    Edit,
-    Trash2,
+import { 
+    ArrowLeft, 
+    MapPin, 
+    Phone, 
+    Mail, 
+    Building2, 
+    Calendar, 
+    Activity, 
+    Edit, 
+    Trash2 
 } from "lucide-react"
 import dayjs from "dayjs"
 import Link from "next/link"
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
+import { 
+    Dialog, 
+    DialogContent, 
+    DialogHeader, 
+    DialogTitle, 
+    DialogTrigger 
 } from "@/components/ui/dialog"
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
+import { 
+    AlertDialog, 
+    AlertDialogAction, 
+    AlertDialogCancel, 
+    AlertDialogContent, 
+    AlertDialogDescription, 
+    AlertDialogFooter, 
+    AlertDialogHeader, 
+    AlertDialogTitle, 
+    AlertDialogTrigger 
 } from "@/components/ui/alert-dialog"
 import FacilityForm from "@/components/facility-form"
 import { useToast } from "@/hooks/use-toast"
@@ -69,7 +69,9 @@ export default function FacilityDetailClient({ id }: FacilityDetailClientProps) 
     const handleDelete = async () => {
         setIsDeleting(true)
         try {
-            await apiRequest(`/health-facilities/${id}`, { method: 'DELETE' })
+            await apiRequest(`/health-facilities/${id}`, {
+                method: 'DELETE'
+            })
             toast({
                 title: "Facility Deleted",
                 description: "The health facility has been permanently removed.",
@@ -122,7 +124,12 @@ export default function FacilityDetailClient({ id }: FacilityDetailClientProps) 
     return (
         <DashboardShell title="Facility Detail" subtitle={facility.name}>
             <div className="flex items-center gap-4 mb-6">
-                <Button variant="ghost" size="icon" onClick={() => router.push('/facilities')} className="h-8 w-8">
+                <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    onClick={() => router.push('/facilities')}
+                    className="h-8 w-8"
+                >
                     <ArrowLeft className="h-4 w-4" />
                 </Button>
                 <div>
@@ -142,7 +149,7 @@ export default function FacilityDetailClient({ id }: FacilityDetailClientProps) 
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                 {/* Left Column - Profile Card */}
                 <div className="lg:col-span-1 space-y-6">
-                    <Card className="border-none bg-card shadow-sm sticky top-6">
+                    <Card className="border-none bg-card sticky top-6">
                         <CardHeader className="pb-2">
                             <div className="flex justify-between items-start">
                                 <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden border border-primary/20">
@@ -155,7 +162,9 @@ export default function FacilityDetailClient({ id }: FacilityDetailClientProps) 
                                 <Badge className="bg-primary hover:bg-primary/90">Active</Badge>
                             </div>
                             <CardTitle className="mt-4 text-lg font-black">{facility.name}</CardTitle>
-                            <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">{facility.type?.name || 'Uncategorized'}</p>
+                            <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">
+                                {facility.type?.name || 'Uncategorized'}
+                            </p>
                         </CardHeader>
                         <CardContent className="space-y-6">
                             <div className="space-y-4">
@@ -166,7 +175,6 @@ export default function FacilityDetailClient({ id }: FacilityDetailClientProps) 
                                         <span className="font-bold">{facility.address || "N/A"}</span>
                                     </div>
                                 </div>
-
                                 <div className="flex items-center gap-3 text-sm">
                                     <Building2 className="h-4 w-4 text-muted-foreground shrink-0" />
                                     <div className="flex flex-col">
@@ -174,7 +182,6 @@ export default function FacilityDetailClient({ id }: FacilityDetailClientProps) 
                                         <span className="font-bold">{facility.owner || "N/A"}</span>
                                     </div>
                                 </div>
-
                                 <div className="flex items-center gap-3 text-sm">
                                     <Phone className="h-4 w-4 text-muted-foreground shrink-0" />
                                     <div className="flex flex-col">
@@ -182,7 +189,6 @@ export default function FacilityDetailClient({ id }: FacilityDetailClientProps) 
                                         <span className="font-bold">{facility.phoneNumber || "N/A"}</span>
                                     </div>
                                 </div>
-
                                 <div className="flex items-center gap-3 text-sm">
                                     <Mail className="h-4 w-4 text-muted-foreground shrink-0" />
                                     <div className="flex flex-col">
@@ -190,7 +196,6 @@ export default function FacilityDetailClient({ id }: FacilityDetailClientProps) 
                                         <span className="font-bold break-all">{facility.email || "N/A"}</span>
                                     </div>
                                 </div>
-
                                 <div className="flex items-center gap-3 text-sm">
                                     <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
                                     <div className="flex flex-col">
@@ -208,7 +213,7 @@ export default function FacilityDetailClient({ id }: FacilityDetailClientProps) 
                                             Edit Facility
                                         </Button>
                                     </DialogTrigger>
-                                    <DialogContent className="sm:max-w-[700px] p-0 overflow-hidden border-none bg-background shadow-2xl">
+                                    <DialogContent className="sm:max-w-[700px] p-0 overflow-hidden border-none bg-background ">
                                         <div className="bg-primary/5 p-6 border-b border-primary/10">
                                             <DialogHeader>
                                                 <DialogTitle className="text-2xl font-black uppercase tracking-tighter text-foreground flex items-center gap-3">
@@ -220,12 +225,9 @@ export default function FacilityDetailClient({ id }: FacilityDetailClientProps) 
                                             </DialogHeader>
                                         </div>
                                         <div className="p-8 max-h-[80vh] overflow-y-auto">
-                                            <FacilityForm
-                                                initialData={facility}
-                                                onSuccess={() => {
-                                                    setIsEditOpen(false)
-                                                    window.location.reload()
-                                                }}
+                                            <FacilityForm 
+                                                initialData={facility} 
+                                                onSuccess={() => { setIsEditOpen(false); window.location.reload(); }} 
                                             />
                                         </div>
                                     </DialogContent>
@@ -238,7 +240,7 @@ export default function FacilityDetailClient({ id }: FacilityDetailClientProps) 
                                             Delete Facility
                                         </Button>
                                     </AlertDialogTrigger>
-                                    <AlertDialogContent className="border-none shadow-2xl">
+                                    <AlertDialogContent className="border-none ">
                                         <AlertDialogHeader>
                                             <AlertDialogTitle className="text-xl font-black uppercase tracking-tight text-foreground">
                                                 Are you absolutely sure?
@@ -249,8 +251,8 @@ export default function FacilityDetailClient({ id }: FacilityDetailClientProps) 
                                         </AlertDialogHeader>
                                         <AlertDialogFooter className="gap-3 pt-4">
                                             <AlertDialogCancel className="h-12 border-2 font-bold uppercase tracking-widest">Cancel</AlertDialogCancel>
-                                            <AlertDialogAction
-                                                onClick={handleDelete}
+                                            <AlertDialogAction 
+                                                onClick={handleDelete} 
                                                 disabled={isDeleting}
                                                 className="h-12 bg-destructive hover:bg-destructive/90 text-white font-black uppercase tracking-widest"
                                             >
@@ -296,7 +298,10 @@ export default function FacilityDetailClient({ id }: FacilityDetailClientProps) 
                                 header: "Client",
                                 accessorKey: "client",
                                 cell: (item: any) => (
-                                    <Link href={`/users/clients/${item.screening?.clientId}`} className="font-black text-xs hover:text-primary transition-colors flex items-center gap-2">
+                                    <Link 
+                                        href={`/users/clients/${item.screening?.clientId}`} 
+                                        className="font-black text-xs hover:text-primary transition-colors flex items-center gap-2"
+                                    >
                                         View Client Details
                                         <Activity className="h-3 w-3" />
                                     </Link>
@@ -320,9 +325,9 @@ export default function FacilityDetailClient({ id }: FacilityDetailClientProps) 
                                 cell: (item: any) => (
                                     <Badge variant="outline" className={`
                                         font-black border-none px-3 py-1 rounded-full text-[10px] uppercase tracking-widest
-                                        ${item.status === 'PENDING' ? 'bg-amber-500/10 text-amber-600' :
-                                            item.status === 'COMPLETED' ? 'bg-emerald-500/10 text-emerald-600' :
-                                                'bg-rose-500/10 text-rose-600'}
+                                        ${item.status === 'PENDING' ? 'bg-amber-500/10 text-amber-600' : 
+                                          item.status === 'COMPLETED' ? 'bg-emerald-500/10 text-emerald-600' : 
+                                          'bg-rose-500/10 text-rose-600'}
                                     `}>
                                         {item.status}
                                     </Badge>
