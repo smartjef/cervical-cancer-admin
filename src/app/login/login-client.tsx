@@ -28,11 +28,7 @@ export default function LoginPage() {
         password,
       },
       {
-        onSuccess: (ctx: any) => {
-          if (ctx.data.user.role !== "admin") {
-            setError(`Access denied. Admin only. (Detected role: ${ctx.data.user.role || 'none'})`);
-            return;
-          }
+        onSuccess: () => {
           router.push("/dashboard");
         },
         onError: (ctx: any) => {

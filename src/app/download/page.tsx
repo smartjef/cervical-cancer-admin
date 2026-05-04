@@ -83,7 +83,7 @@ export default async function DownloadPage() {
                     className="w-full h-16 text-lg font-bold shadow-lg shadow-primary/20"
                     asChild
                   >
-                    <a href={`http://localhost:3001/api/apks/download/${latestApk.filename}`} download>
+                    <a href={`${process.env.NEXT_PUBLIC_APK_BASE_URL}/api/apks/download/${latestApk.filename}`} download>
                       <Download className="mr-2 h-6 w-6" />
                       Download APK Now
                     </a>
@@ -160,7 +160,7 @@ export default async function DownloadPage() {
                           </p>
                         </div>
                         <Button variant="ghost" size="sm" asChild>
-                          <a href={`http://localhost:3001/api/apks/download/${v.filename}`} download>
+                          <a href={`${process.env.NEXT_PUBLIC_APK_BASE_URL}/api/apks/download/${v.filename}`} download>
                             Download
                           </a>
                         </Button>

@@ -238,7 +238,7 @@ export default function ApkClient({ initialApks }: { initialApks: ApkInfo[] }) {
                                             <TableCell className="text-right">
                                                 <div className="flex justify-end gap-1">
                                                     <Button size="icon" variant="ghost" className="h-8 w-8" asChild>
-                                                        <a href={`http://localhost:3001/api/apks/download/${apk.filename}`} download title="Download">
+                                                        <a href={`${process.env.NEXT_PUBLIC_APK_BASE_URL}/api/apks/download/${apk.filename}`} download title="Download">
                                                             <Download className="h-4 w-4" />
                                                         </a>
                                                     </Button>
