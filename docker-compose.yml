@@ -9,4 +9,6 @@ services:
       - "3000:3000"
     environment:
       - NEXT_PUBLIC_API_URL=http://172.238.122.159:8080/api
+      - NEXT_PUBLIC_APK_BASE_URL=http://172.238.122.159:8080
+      - NEXT_PUBLIC_APP_NAME=Cervical Screening Registry
     restart: always
