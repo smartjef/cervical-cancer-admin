@@ -2,196 +2,214 @@
 
 import DashboardShell from "@/components/dashboard-shell"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { 
-    Heart, 
-    Users, 
-    Calendar, 
-    Target, 
-    AlertTriangle, 
-    CheckCircle2, 
-    MoreVertical, 
-    BarChart3 
+import {
+    Heart,
+    Users,
+    Target,
+    AlertTriangle,
+    BarChart3,
+    TrendingUp,
+    ArrowUpRight,
 } from "lucide-react"
 import RecentActivityFeed from "@/components/recent-activity-feed"
 import { useApi } from "@/hooks/use-api"
 import dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime"
+import { Badge } from "@/components/ui/badge"
 
 dayjs.extend(relativeTime)
 
 export default function DashboardPage() {
     const { data: dashboardData, isLoading: dashboardLoading } = useApi<any>("/admin/dashboard/summary")
-    const { data: alertData, isLoading: alertLoading } = useApi<any>("/screenings?risk=HIGH_RISK&limit=3&includeForAllProviders=true")
+    const { data: alertData } = useApi<any>("/screenings?risk=HIGH_RISK&limit=5&includeForAllProviders=true")
 
     const stats = [
         {
             title: "Total Screenings",
-            value: dashboardData?.stats?.totalScreenings || "0",
-            change: "+12% from last month",
+            value: dashboardData?.stats?.totalScreenings ?? "—",
+            sub: "All time",
             icon: Heart,
             color: "text-primary",
             bg: "bg-primary/10",
+            ring: "ring-primary/20",
         },
         {
             title: "Active CHPs",
-            value: `${dashboardData?.stats?.activeChps || 0}`,
-            change: "Active in last 7 days",
+            value: dashboardData?.stats?.activeChps ?? "—",
+            sub: "Last 7 days",
             icon: Users,
             color: "text-secondary",
             bg: "bg-secondary/10",
+            ring: "ring-secondary/20",
         },
         {
             title: "Total Clients",
-            value: `${dashboardData?.stats?.totalClients || 0}`,
-            change: "Target: 100 screenings",
+            value: dashboardData?.stats?.totalClients ?? "—",
+            sub: "Registered",
             icon: BarChart3,
             color: "text-cyan-600",
-            bg: "bg-cyan-50",
+            bg: "bg-cyan-500/10",
+            ring: "ring-cyan-500/20",
         },
         {
             title: "Follow-up Rate",
-            value: dashboardData?.stats?.followUpRate || "0%",
-            change: "Target: 90%",
+            value: dashboardData?.stats?.followUpRate ?? "—",
+            sub: "Target: 90%",
             icon: Target,
             color: "text-amber-600",
-            bg: "bg-amber-50",
+            bg: "bg-amber-500/10",
+            ring: "ring-amber-500/20",
         },
     ]
 
     const riskDistribution = dashboardData?.riskDistribution || [
-        { name: "Low Risk", value: 0, color: "oklch(0.5 0.1 190)" },
-        { name: "Medium Risk", value: 0, color: "oklch(0.7 0.15 80)" },
-        { name: "High Risk", value: 0, color: "oklch(0.6 0.2 25)" },
+        { name: "Low Risk", value: 0, color: "oklch(0.58 0.15 165)" },
+        { name: "Medium Risk", value: 0, color: "oklch(0.72 0.17 80)" },
+        { name: "High Risk", value: 0, color: "oklch(0.58 0.22 25)" },
     ]
 
     const chpPerformance = dashboardData?.chpPerformance || []
 
     const priorityAlerts = alertData?.results?.map((s: any) => ({
-        title: 'High Risk',
-        message: `Urgent follow-up required for ${s.client.firstName} ${s.client.lastName} (ID: ${s.client.id})`,
-        type: 'high',
+        name: `${s.client.firstName} ${s.client.lastName}`,
+        id: s.client.id,
+        screeningId: s.id,
     })) || []
 
     return (
-        <DashboardShell title="Analytics Dashboard" subtitle="SCREEN-IT">
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-0 md:gap-6 mb-8 overflow-hidden rounded-2xl border border-border/50 md:border-none md:rounded-none bg-card md:bg-transparent md:border-none">
-                {stats.map((stat: any, index: number) => (
-                    <div key={stat.title} className={`p-5 md:p-6 md:bg-card md:rounded-2xl transition-all border-border/50 ${index % 2 === 0 ? "border-r" : ""} ${index < 2 ? "border-b" : ""} md:border-none`}>
-                        <div className="flex items-center justify-between mb-2">
-                            <span className="text-2xl md:text-3xl lg:text-4xl font-black text-foreground">{stat.value}</span>
-                            <div className={`${stat.bg} ${stat.color} p-2 rounded-lg md:rounded-xl`}>
-                                <stat.icon className="h-4 w-4 md:h-6 md:w-6" />
+        <DashboardShell title="Dashboard" subtitle="Overview">
+            {/* Stat cards */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                {stats.map((stat) => (
+                    <Card key={stat.title} className="border border-border/60 shadow-sm bg-card hover:shadow-md transition-shadow">
+                        <CardContent className="p-5">
+                            <div className="flex items-start justify-between mb-3">
+                                <div className={`${stat.bg} ${stat.color} p-2.5 rounded-xl ring-4 ${stat.ring}`}>
+                                    <stat.icon className="h-4 w-4" />
+                                </div>
+                                <ArrowUpRight className="h-3.5 w-3.5 text-muted-foreground/40" />
                             </div>
-                        </div>
-                        <p className="text-xs md:text-sm lg:text-base text-foreground font-bold mb-0.5">{stat.title}</p>
-                        <p className="text-[10px] md:text-xs text-muted-foreground font-medium">{stat.change}</p>
-                    </div>
+                            <p className="text-2xl lg:text-3xl font-bold text-foreground tabular-nums">
+                                {dashboardLoading ? <span className="animate-pulse text-muted-foreground/30">···</span> : stat.value}
+                            </p>
+                            <p className="text-xs font-semibold text-foreground mt-0.5">{stat.title}</p>
+                            <p className="text-[10px] text-muted-foreground mt-0.5">{stat.sub}</p>
+                        </CardContent>
+                    </Card>
                 ))}
             </div>
 
-            <div className="grid gap-6 md:grid-cols-2 mb-6">
-                <Card className="border-none h-full bg-card">
-                    <CardHeader>
-                        <CardTitle className="text-lg font-bold text-foreground">Risk Distribution</CardTitle>
+            <div className="grid gap-4 md:grid-cols-2 mb-4">
+                {/* Risk Distribution */}
+                <Card className="border border-border/60 shadow-sm bg-card">
+                    <CardHeader className="pb-3">
+                        <CardTitle className="text-sm font-semibold text-foreground flex items-center gap-2">
+                            <BarChart3 className="h-4 w-4 text-primary" />
+                            Risk Distribution
+                        </CardTitle>
                     </CardHeader>
-                    <CardContent>
-                        <div className="space-y-4 pt-2">
-                            {riskDistribution.map((item: any) => (
-                                <div key={item.name}>
-                                    <div className="flex justify-between items-center mb-1.5">
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: item.color }}></div>
-                                            <span className="text-sm font-medium text-muted-foreground">{item.name}</span>
-                                        </div>
-                                        <span className="text-sm font-bold text-foreground">{item.value}%</span>
+                    <CardContent className="space-y-4">
+                        {riskDistribution.map((item: any) => (
+                            <div key={item.name}>
+                                <div className="flex justify-between items-center mb-1.5">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.color }} />
+                                        <span className="text-xs font-medium text-muted-foreground">{item.name}</span>
                                     </div>
-                                    <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
-                                        <div 
-                                            className="h-full rounded-full" 
-                                            style={{ 
-                                                width: `${item.value}%`, 
-                                                backgroundColor: item.color 
-                                            }}
-                                        ></div>
-                                    </div>
+                                    <span className="text-xs font-bold text-foreground tabular-nums">{item.value}%</span>
                                 </div>
-                            ))}
-                        </div>
+                                <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
+                                    <div
+                                        className="h-full rounded-full transition-all duration-700"
+                                        style={{ width: `${item.value}%`, backgroundColor: item.color }}
+                                    />
+                                </div>
+                            </div>
+                        ))}
                     </CardContent>
                 </Card>
 
-                <Card className="border-none h-full bg-card">
-                    <CardHeader className="flex flex-row items-center justify-between">
-                        <CardTitle className="text-lg font-bold text-foreground flex items-center gap-2">
-                            <AlertTriangle className="h-5 w-5 text-amber-500" />
-                            Priority Alerts
+                {/* Priority Alerts */}
+                <Card className="border border-border/60 shadow-sm bg-card">
+                    <CardHeader className="pb-3">
+                        <CardTitle className="text-sm font-semibold text-foreground flex items-center gap-2">
+                            <AlertTriangle className="h-4 w-4 text-rose-500" />
+                            High-Risk Alerts
+                            {priorityAlerts.length > 0 && (
+                                <Badge className="ml-auto text-[10px] h-4 px-1.5 bg-rose-500/10 text-rose-600 border-rose-500/20 font-bold">
+                                    {priorityAlerts.length}
+                                </Badge>
+                            )}
                         </CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-3">
+                    <CardContent>
                         {priorityAlerts.length > 0 ? (
-                            priorityAlerts.map((alert: any, i: number) => (
-                                <div key={i} className="flex gap-4">
-                                    <div className={`flex-1 p-4 ${alert.type === 'high' ? 'bg-red-500/10 border-red-500' : 'bg-primary/10 border-primary'} border-l-4 rounded-none transition-colors`}>
-                                        <h4 className={`text-xs font-bold ${alert.type === 'high' ? 'text-red-500' : 'text-primary'} mb-1`}>
-                                            {alert.title}
-                                        </h4>
-                                        <p className={`text-[10px] ${alert.type === 'high' ? 'text-red-500/80' : 'text-primary/80'} font-medium`}>
-                                            {alert.message}
-                                        </p>
+                            <div className="space-y-2">
+                                {priorityAlerts.map((alert: any, i: number) => (
+                                    <div key={i} className="flex items-center gap-3 p-3 bg-rose-500/5 border border-rose-500/15 rounded-lg">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0 animate-pulse" />
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-xs font-semibold text-foreground truncate">{alert.name}</p>
+                                            <p className="text-[10px] text-muted-foreground">Urgent follow-up required</p>
+                                        </div>
+                                        <Badge variant="outline" className="text-[9px] h-4 px-1.5 text-rose-600 border-rose-200 shrink-0">
+                                            HIGH
+                                        </Badge>
                                     </div>
-                                </div>
-                            ))
+                                ))}
+                            </div>
                         ) : (
-                            <div className="flex flex-col items-center justify-center py-8 text-center rounded-lg">
-                                <AlertTriangle className="h-8 w-8 text-muted-foreground/30 mb-2" />
-                                <p className="text-xs text-muted-foreground font-medium">No priority alerts at this time</p>
+                            <div className="flex flex-col items-center justify-center py-8 text-center">
+                                <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center mb-2">
+                                    <Heart className="h-5 w-5 text-emerald-500" />
+                                </div>
+                                <p className="text-xs font-medium text-muted-foreground">No priority alerts</p>
                             </div>
                         )}
                     </CardContent>
                 </Card>
             </div>
 
-            <div className="grid gap-6 md:grid-cols-2">
-                <Card className="border-none h-full bg-card">
-                    <CardHeader>
-                        <CardTitle className="text-lg font-bold text-foreground">CHP Performance Overview</CardTitle>
+            <div className="grid gap-4 md:grid-cols-2">
+                {/* CHP Performance */}
+                <Card className="border border-border/60 shadow-sm bg-card">
+                    <CardHeader className="pb-3">
+                        <CardTitle className="text-sm font-semibold text-foreground flex items-center gap-2">
+                            <TrendingUp className="h-4 w-4 text-secondary" />
+                            CHP Performance
+                        </CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-6">
+                    <CardContent className="space-y-3">
                         {chpPerformance.length > 0 ? (
                             chpPerformance.map((chp: any) => (
-                                <div key={chp.name} className="flex items-center justify-between group">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold">
-                                            {chp.name.charAt(0)}
-                                        </div>
-                                        <div>
-                                            <p className="text-sm font-bold text-foreground">{chp.name}</p>
-                                            <div className="flex gap-3 mt-1.5">
-                                                <span className="text-[10px] text-muted-foreground/60"><span className="font-bold text-muted-foreground">{chp.clients}</span> clients</span>
-                                                <span className="text-[10px] text-muted-foreground/60"><span className="font-bold text-muted-foreground">{chp.screenings}</span> screenings</span>
-                                            </div>
-                                        </div>
+                                <div key={chp.name} className="flex items-center gap-3 py-2 border-b border-border/40 last:border-0">
+                                    <div className="w-8 h-8 rounded-full bg-secondary/10 text-secondary flex items-center justify-center text-xs font-bold shrink-0">
+                                        {chp.name.charAt(0).toUpperCase()}
                                     </div>
-                                    <div className="text-right">
-                                        <p className="text-sm font-bold text-primary">{chp.performance}</p>
-                                        <p className="text-[10px] text-gray-400 font-medium">Performance</p>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-xs font-semibold text-foreground truncate">{chp.name}</p>
+                                        <p className="text-[10px] text-muted-foreground">
+                                            {chp.clients} clients · {chp.screenings} screenings
+                                        </p>
                                     </div>
+                                    <span className="text-xs font-bold text-primary shrink-0">{chp.performance}</span>
                                 </div>
                             ))
                         ) : (
-                            <div className="flex flex-col items-center justify-center py-10 text-center">
-                                <Users className="h-10 w-10 text-muted-foreground/20 mb-3" />
-                                <p className="text-sm text-muted-foreground font-medium">No CHP performance data available</p>
+                            <div className="flex flex-col items-center justify-center py-8 text-center">
+                                <Users className="h-8 w-8 text-muted-foreground/20 mb-2" />
+                                <p className="text-xs text-muted-foreground">No performance data yet</p>
                             </div>
                         )}
                     </CardContent>
                 </Card>
 
-                <Card className="border-none h-full bg-card">
-                    <CardHeader>
-                        <CardTitle className="text-lg font-bold text-foreground">Recent Activity</CardTitle>
+                {/* Recent Activity */}
+                <Card className="border border-border/60 shadow-sm bg-card">
+                    <CardHeader className="pb-3">
+                        <CardTitle className="text-sm font-semibold text-foreground">Recent Activity</CardTitle>
                     </CardHeader>
-                    <CardContent className="p-6 pt-0">
+                    <CardContent className="pt-0">
                         <RecentActivityFeed limit={5} />
                     </CardContent>
                 </Card>

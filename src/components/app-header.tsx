@@ -192,18 +192,18 @@ export function AppHeader({
         </div>
       )}
 
-      <header className="flex h-20 shrink-0 items-center justify-between px-6 bg-sidebar/80 backdrop-blur-md border-b border-border transition-colors">
+      <header className="flex h-14 shrink-0 items-center justify-between px-6 bg-sidebar/90 backdrop-blur-md border-b border-border transition-colors">
         <div className="flex items-center gap-4">
           <SidebarTrigger className="text-muted-foreground hover:text-primary transition-colors" />
         </div>
 
         <div className="flex items-center gap-4">
-          <div className="relative hidden w-64 md:block">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <div className="relative hidden w-60 md:block">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
             <Input
               type="search"
               placeholder="Search..."
-              className="w-full bg-muted/50 pl-9 focus-visible:ring-primary border-none text-foreground"
+              className="h-9 w-full bg-muted/60 pl-9 text-sm border border-border rounded-lg focus-visible:ring-1 focus-visible:ring-primary/40"
             />
           </div>
 
@@ -299,7 +299,7 @@ export function AppHeader({
 
             <button
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              className="p-2 hover:bg-muted text-muted-foreground transition-colors"
+              className="p-2 hover:bg-muted rounded-lg text-muted-foreground hover:text-foreground transition-colors"
               title="Toggle Theme"
             >
               {mounted &&
@@ -323,7 +323,7 @@ export function AppHeader({
                   </span>
                 </div>
                 <div className="relative">
-                  <Avatar className="h-9 w-9 border-none hover:ring-2 hover:ring-primary/20 transition-all ">
+                  <Avatar className="h-8 w-8 border border-border hover:ring-2 hover:ring-primary/30 transition-all">
                     <AvatarImage src={user?.image || undefined} />
                     <AvatarFallback className="bg-primary/10 text-primary font-bold">
                       {initials}
