@@ -208,6 +208,7 @@ export default function UserManagementPage() {
                     id: u.id,
                     chpId: chpInfo?.id,
                     name: u.name || u.email,
+                    username: u.username,
                     role: u.role?.toUpperCase() || "USER",
                     status: u.banned ? "Inactive" : "Active",
                     location: "AIC Pearl Hospital",
@@ -475,6 +476,9 @@ export default function UserManagementPage() {
                                                 <div className="flex flex-col">
                                                     <div className="flex items-center gap-2">
                                                         <h4 className="text-sm font-bold text-foreground">{user.name}</h4>
+                                                        {user.username && (
+                                                            <span className="text-[10px] font-medium text-muted-foreground">@{user.username}</span>
+                                                        )}
                                                         <Badge variant="secondary" className="bg-secondary/10 text-secondary text-[9px] font-bold px-1.5 py-0 leading-none h-4 border-none">
                                                             {user.role}
                                                         </Badge>

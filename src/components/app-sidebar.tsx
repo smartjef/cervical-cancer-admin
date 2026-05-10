@@ -12,6 +12,7 @@ import {
   Smartphone,
   BookOpen,
   ChevronRight,
+  Map as MapIcon,
 } from "lucide-react";
 import {
   Sidebar,
@@ -37,6 +38,7 @@ const navItems = [
   { title: "Referrals", url: "/referrals", icon: ClipboardList },
   { title: "Follow-ups", url: "/follow-ups", icon: CalendarClock },
   { title: "Users", url: "/users", icon: Users },
+  { title: "Geographic View", url: "/maps", icon: MapIcon },
   { title: "Reports", url: "/reports", icon: FileText },
   { title: "App Management", url: "/dashboard/apks", icon: Smartphone },
 ];

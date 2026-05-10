@@ -228,75 +228,77 @@ export default function ClientDetailClient({ id }: { id: string }) {
             </div>
 
             <div className="grid gap-6 lg:grid-cols-4">
-                {/* Left Sidebar: Profile Card */}
-                <Card className="border border-border/50 bg-card lg:col-span-1 h-fit">
-                    <CardHeader className="pb-4">
-                        <div className="flex flex-col items-center mb-3">
-                            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-3">
-                                <User className="h-8 w-8" />
-                            </div>
-                            <CardTitle className="text-lg font-bold text-foreground text-center">
-                                {client.firstName} {client.lastName}
-                            </CardTitle>
-                            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mt-1">
-                                ID: {client.nationalId}
-                            </p>
-                        </div>
-                        <Badge 
-                            variant="outline" 
-                            className={`font-bold border-none px-2.5 py-0.5 rounded-full text-[10px] uppercase tracking-wider w-fit mx-auto ${
-                                riskInterpretation.includes('HIGH') ? 'bg-rose-500/10 text-rose-600' : 
-                                (riskInterpretation.includes('MEDIUM') || riskInterpretation.includes('MODERATE')) ? 'bg-amber-500/10 text-amber-600' : 
-                                riskInterpretation === 'NOT_SCREENED' ? 'bg-muted text-muted-foreground' : 
-                                'bg-emerald-500/10 text-emerald-600'
-                            }`}
-                        >
-                            {riskInterpretation.replace('_RISK', '').replace('MODERATE', 'MEDIUM').replace('NOT_SCREENED', 'Not Screened')}
-                        </Badge>
-                    </CardHeader>
-                    <CardContent className="space-y-3 pt-0">
-                        <div className="flex items-center justify-between py-2 border-y border-border/50">
-                            <span className="text-xs font-bold text-muted-foreground uppercase">Risk Score</span>
-                            <span className="text-lg font-black text-primary">{riskScore}</span>
-                        </div>
-                        <div className="space-y-2 pt-2">
-                            <div className="flex items-center gap-2 text-sm">
-                                <div className="p-1.5 rounded-lg bg-muted/50">
-                                    <Phone className="h-3.5 w-3.5 text-muted-foreground" />
+                {/* Left Sidebar: Profile & Map */}
+                <div className="lg:col-span-1 space-y-6">
+                    <Card className="border border-border/50 bg-card h-fit">
+                        <CardHeader className="pb-4">
+                            <div className="flex flex-col items-center mb-3">
+                                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-3">
+                                    <User className="h-8 w-8" />
                                 </div>
-                                <span className="text-foreground font-medium text-xs">{client.phoneNumber}</span>
+                                <CardTitle className="text-lg font-bold text-foreground text-center">
+                                    {client.firstName} {client.lastName}
+                                </CardTitle>
+                                <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mt-1">
+                                    ID: {client.nationalId}
+                                </p>
                             </div>
-                            <div className="flex items-center gap-2 text-sm">
-                                <div className="p-1.5 rounded-lg bg-muted/50">
-                                    <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
-                                </div>
-                                <span className="text-foreground font-medium text-xs">{dayjs(client.dateOfBirth).format('MMM D, YYYY')}</span>
-                            </div>
-                            <div className="flex items-center gap-2 text-sm">
-                                <div className="p-1.5 rounded-lg bg-muted/50">
-                                    <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
-                                </div>
-                                <span className="text-foreground font-medium text-xs truncate">{client.county}, {client.subcounty}</span>
-                            </div>
-                        </div>
-                        <div className="pt-3 border-t border-border/50 space-y-2">
-                            <Button 
+                            <Badge 
                                 variant="outline" 
-                                className="w-full justify-start gap-2 font-bold rounded-xl border-border/60 hover:bg-primary/5 hover:text-primary hover:border-primary/20 h-9 text-xs" 
-                                onClick={() => setIsEditDialogOpen(true)}
+                                className={`font-bold border-none px-2.5 py-0.5 rounded-full text-[10px] uppercase tracking-wider w-fit mx-auto ${
+                                    riskInterpretation.includes('HIGH') ? 'bg-rose-500/10 text-rose-600' : 
+                                    (riskInterpretation.includes('MEDIUM') || riskInterpretation.includes('MODERATE')) ? 'bg-amber-500/10 text-amber-600' : 
+                                    riskInterpretation === 'NOT_SCREENED' ? 'bg-muted text-muted-foreground' : 
+                                    'bg-emerald-500/10 text-emerald-600'
+                                }`}
                             >
-                                <Edit className="h-3.5 w-3.5" /> Edit Client
-                            </Button>
-                            <Button 
-                                variant="outline" 
-                                className="w-full justify-start gap-2 font-bold rounded-xl border-rose-100 bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white hover:border-rose-600 h-9 text-xs" 
-                                onClick={() => setIsDeleteDialogOpen(true)}
-                            >
-                                <Trash2 className="h-3.5 w-3.5" /> Delete Client
-                            </Button>
-                        </div>
-                    </CardContent>
-                </Card>
+                                {riskInterpretation.replace('_RISK', '').replace('MODERATE', 'MEDIUM').replace('NOT_SCREENED', 'Not Screened')}
+                            </Badge>
+                        </CardHeader>
+                        <CardContent className="space-y-3 pt-0">
+                            <div className="flex items-center justify-between py-2 border-y border-border/50">
+                                <span className="text-xs font-bold text-muted-foreground uppercase">Risk Score</span>
+                                <span className="text-lg font-black text-primary">{riskScore}</span>
+                            </div>
+                            <div className="space-y-2 pt-2">
+                                <div className="flex items-center gap-2 text-sm">
+                                    <div className="p-1.5 rounded-lg bg-muted/50">
+                                        <Phone className="h-3.5 w-3.5 text-muted-foreground" />
+                                    </div>
+                                    <span className="text-foreground font-medium text-xs">{client.phoneNumber}</span>
+                                </div>
+                                <div className="flex items-center gap-2 text-sm">
+                                    <div className="p-1.5 rounded-lg bg-muted/50">
+                                        <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+                                    </div>
+                                    <span className="text-foreground font-medium text-xs">{dayjs(client.dateOfBirth).format('MMM D, YYYY')}</span>
+                                </div>
+                                <div className="flex items-center gap-2 text-sm">
+                                    <div className="p-1.5 rounded-lg bg-muted/50">
+                                        <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
+                                    </div>
+                                    <span className="text-foreground font-medium text-xs truncate">{client.county}, {client.subcounty}</span>
+                                </div>
+                            </div>
+                            <div className="pt-3 border-t border-border/50 space-y-2">
+                                <Button 
+                                    variant="outline" 
+                                    className="w-full justify-start gap-2 font-bold rounded-xl border-border/60 hover:bg-primary/5 hover:text-primary hover:border-primary/20 h-9 text-xs" 
+                                    onClick={() => setIsEditDialogOpen(true)}
+                                >
+                                    <Edit className="h-3.5 w-3.5" /> Edit Client
+                                </Button>
+                                <Button 
+                                    variant="outline" 
+                                    className="w-full justify-start gap-2 font-bold rounded-xl border-rose-100 bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white hover:border-rose-600 h-9 text-xs" 
+                                    onClick={() => setIsDeleteDialogOpen(true)}
+                                >
+                                    <Trash2 className="h-3.5 w-3.5" /> Delete Client
+                                </Button>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
 
                 {/* Right Content: Tabs */}
                 <div className="lg:col-span-3">

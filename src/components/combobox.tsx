@@ -47,6 +47,28 @@ export function Combobox({
   disabled = false,
 }: ComboboxProps) {
   const [open, setOpen] = React.useState(false)
+  const [mounted, setMounted] = React.useState(false)
+
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) {
+    return (
+      <Button
+        variant="outline"
+        role="combobox"
+        disabled={disabled}
+        className={cn(
+          "w-full justify-between border-border bg-card font-bold text-muted-foreground h-11",
+          className
+        )}
+      >
+        <span className="truncate">{placeholder}</span>
+        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+      </Button>
+    )
+  }
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

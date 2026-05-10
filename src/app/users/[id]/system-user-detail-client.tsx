@@ -41,6 +41,12 @@ import { useToast } from "@/hooks/use-toast"
 import { useState, useEffect } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { DataTable } from "@/components/data-table"
+import dynamic from "next/dynamic"
+
+const ScreeningActivityMap = dynamic(() => import("@/components/screening-activity-map"), { 
+    ssr: false,
+    loading: () => <div className="h-[400px] w-full rounded-2xl bg-muted/30 animate-pulse" />
+})
 import { 
     Select, 
     SelectContent, 
@@ -507,6 +513,15 @@ export default function SystemUserDetailClient({ id }: { id: string }) {
 
                 {/* Right Column: Content Area */}
                 <div className="lg:col-span-3 space-y-8">
+                    {isChp && screenings?.results && screenings.results.length > 0 && (
+                        <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+                            <ScreeningActivityMap 
+                                screenings={screenings.results} 
+                                providerName={user.name} 
+                            />
+                        </div>
+                    )}
+
                     <Card className="border-none -none bg-transparent">
                         <Tabs defaultValue="activities" value={activeTab} onValueChange={onTabChange} className="w-full">
                             <TabsList variant="line" className="bg-transparent border-b border-border/50 w-full justify-start h-auto p-0 gap-8">

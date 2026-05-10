@@ -18,6 +18,12 @@ import {
 import dayjs from "dayjs";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import dynamic from "next/dynamic";
+
+const ScreeningLocationMap = dynamic(() => import("@/components/screening-location-map"), { 
+  ssr: false,
+  loading: () => <div className="h-[300px] w-full rounded-xl bg-muted/30 animate-pulse" />
+});
 
 export default function ScreeningDetailClient({ id }: { id: string }) {
   const { data: screening, isLoading } = useApi<any>(`/screenings/${id}`);
@@ -207,6 +213,16 @@ export default function ScreeningDetailClient({ id }: { id: string }) {
         </div>
 
         <div className="space-y-6">
+          <Card className="border-none bg-transparent shadow-none overflow-hidden h-[400px]">
+            <CardContent className="p-0 h-full">
+              <ScreeningLocationMap 
+                latitude={screening.coordinates?.latitude} 
+                longitude={screening.coordinates?.longitude} 
+                clientName={`${screening.client?.firstName} ${screening.client?.lastName}`}
+              />
+            </CardContent>
+          </Card>
+
           <Card className="border-none bg-card ">
             <CardHeader>
               <CardTitle className="text-lg font-bold">Client</CardTitle>
