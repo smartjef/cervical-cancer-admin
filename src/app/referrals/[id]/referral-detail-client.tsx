@@ -6,8 +6,8 @@ import DashboardShell from "@/components/dashboard-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useApi } from "@/hooks/use-api";
+import { cn } from "@/lib/utils";
 import {
   ArrowLeft,
   Calendar,
@@ -20,9 +20,14 @@ import {
   Building2,
   StickyNote,
   Eye,
+  Plus,
+  Trash,
 } from "lucide-react";
 import dayjs from "dayjs";
 import Link from "next/link";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/api";
+import { CompleteReferralDialog } from "@/components/complete-referral-dialog";
 
 interface ReferralDetailClientProps {
   id: string;
@@ -32,9 +37,13 @@ export default function ReferralDetailClient({
   id,
 }: ReferralDetailClientProps) {
   const router = useRouter();
+  const { toast } = useToast();
   
   // Fetch Referral Details
-  const { data: referral, isLoading } = useApi<any>(`/referrals/${id}`);
+  const { data: referral, isLoading, refetch } = useApi<any>(`/referrals/${id}`);
+
+  // Completion Form State
+  const [isCompleteDialogOpen, setIsCompleteDialogOpen] = useState(false);
 
   if (isLoading) {
     return (
@@ -89,6 +98,15 @@ export default function ReferralDetailClient({
             </span>
           </h1>
         </div>
+        {(referral.status === "PENDING" || referral.status === "VISITED_PENDING_RESULTS") && (
+          <Button 
+            className="ml-auto bg-emerald-600 hover:bg-emerald-700 gap-2 font-bold"
+            onClick={() => setIsCompleteDialogOpen(true)}
+          >
+            <CheckCircle2 className="h-4 w-4" />
+            Mark as Complete
+          </Button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -269,7 +287,7 @@ export default function ReferralDetailClient({
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-1">
                     <h4 className="text-xs font-bold text-muted-foreground uppercase">
                       Visited Date
@@ -282,14 +300,6 @@ export default function ReferralDetailClient({
                   </div>
                   <div className="space-y-1">
                     <h4 className="text-xs font-bold text-muted-foreground uppercase">
-                      Test Result
-                    </h4>
-                    <Badge variant="outline" className="font-bold">
-                      {referral.testResult || "N/A"}
-                    </Badge>
-                  </div>
-                  <div className="space-y-1">
-                    <h4 className="text-xs font-bold text-muted-foreground uppercase">
                       Final Diagnosis
                     </h4>
                     <p className="font-medium">
@@ -297,6 +307,43 @@ export default function ReferralDetailClient({
                     </p>
                   </div>
                 </div>
+
+                <div className="space-y-4">
+                  <h4 className="text-xs font-bold text-muted-foreground uppercase">
+                    Tests Performed
+                  </h4>
+                  <div className="grid gap-3">
+                    {referral.tests && referral.tests.length > 0 ? (
+                      referral.tests.map((test: any) => (
+                        <div key={test.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border/50">
+                          <div className="flex items-center gap-4">
+                            <div className="flex flex-col">
+                              <span className="text-xs font-bold text-muted-foreground uppercase">Test Type</span>
+                              <span className="font-bold">{test.testType}</span>
+                            </div>
+                            <div className="flex flex-col border-l border-border/50 pl-4">
+                              <span className="text-xs font-bold text-muted-foreground uppercase">Result</span>
+                              <Badge variant="outline" className={`w-fit font-bold ${test.testResult === 'POSITIVE' ? 'bg-red-50 text-red-600 border-red-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100'}`}>
+                                {test.testResult}
+                              </Badge>
+                            </div>
+                            {test.actionTaken && (
+                              <div className="flex flex-col border-l border-border/50 pl-4">
+                                <span className="text-xs font-bold text-muted-foreground uppercase">Action</span>
+                                <span className="text-sm font-medium">{test.actionTaken}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="p-3 bg-muted/30 rounded-lg border border-border/50 italic text-muted-foreground text-sm text-center">
+                        No individual tests recorded.
+                      </div>
+                    )}
+                  </div>
+                </div>
+
                 <div className="space-y-1">
                   <h4 className="text-xs font-bold text-muted-foreground uppercase">
                     Outcome Notes
@@ -378,6 +425,12 @@ export default function ReferralDetailClient({
           )}
         </div>
       </div>
+      <CompleteReferralDialog
+        referral={referral}
+        open={isCompleteDialogOpen}
+        onOpenChange={setIsCompleteDialogOpen}
+        onSuccess={refetch}
+      />
     </DashboardShell>
   );
 }

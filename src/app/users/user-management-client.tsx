@@ -9,23 +9,17 @@ import RecentActivityFeed from "@/components/recent-activity-feed"
 import { Badge } from "@/components/ui/badge"
 import { Combobox } from "@/components/combobox"
 import { 
+    Activity,
     Users, 
     UserPlus, 
     Search, 
     UserCheck, 
     ShieldCheck, 
-    MonitorDot, 
     MapPin, 
     Phone, 
     Calendar, 
-    Edit3, 
-    PauseCircle, 
-    PlayCircle, 
-    Trash2, 
     AlertCircle, 
-    X, 
     Eye, 
-    CheckCircle2, 
     ChevronLeft, 
     ChevronRight 
 } from "lucide-react"
@@ -102,7 +96,7 @@ export default function UserManagementPage() {
                 role: newUser.role
             }
 
-            if (newUser.role === "chp") {
+            if (newUser.role === "chp" || newUser.role === "hcw") {
                 endpoint = "/chps"
                 body = {
                     firstName: newUser.firstName,
@@ -111,7 +105,8 @@ export default function UserManagementPage() {
                     email: newUser.email,
                     password: newUser.password,
                     phoneNumber: newUser.phoneNumber,
-                    dateOfBirth: new Date(newUser.dateOfBirth || "1990-01-01").toISOString()
+                    dateOfBirth: new Date(newUser.dateOfBirth || "1990-01-01").toISOString(),
+                    role: newUser.role
                 }
             } else if (newUser.role === "client") {
                 endpoint = "/clients"
@@ -175,14 +170,15 @@ export default function UserManagementPage() {
     // Compute stats on UI
     const systemUsers = authData?.users || []
     const chpCount = systemUsers.filter((u: any) => u.role === 'chp').length
+    const hcwCount = systemUsers.filter((u: any) => u.role === 'hcw').length
     const adminCount = systemUsers.filter((u: any) => u.role === 'admin').length
     const clientCount = clientData?.totalCount || 0
 
     const userStats = [
         { title: "CHPs", value: chpCount, icon: Users, color: "text-secondary", bg: "bg-secondary/10" },
+        { title: "HCWs", value: hcwCount, icon: Activity, color: "text-blue-600", bg: "bg-blue-50" },
         { title: "Clients", value: clientCount, icon: UserCheck, color: "text-primary", bg: "bg-primary/10" },
         { title: "Admins", value: adminCount, icon: ShieldCheck, color: "text-amber-600", bg: "bg-amber-50" },
-        { title: "Total Users", value: chpCount + adminCount + clientCount, icon: MonitorDot, color: "text-cyan-600", bg: "bg-cyan-50" },
     ]
 
     // Unified list mapping
@@ -190,7 +186,7 @@ export default function UserManagementPage() {
         const results: any[] = []
 
         // Add System Users
-        if (roleFilter === 'all' || roleFilter === 'chp' || roleFilter === 'admin') {
+        if (roleFilter === 'all' || roleFilter === 'chp' || roleFilter === 'hcw' || roleFilter === 'admin') {
             const filteredAuth = systemUsers.filter((u: any) => {
                 if (roleFilter !== 'all' && u.role !== roleFilter) return false
                 if (statusFilter !== 'all') {
@@ -218,7 +214,7 @@ export default function UserManagementPage() {
                     clientsCount: chpInfo?._count?.clients || 0,
                     screeningsCount: chpInfo?._count?.screenings || 0,
                     banned: !!u.banned,
-                    type: u.role === 'chp' ? 'chp' : 'user'
+                    type: (u.role === 'chp' || u.role === 'hcw') ? 'chp' : 'user'
                 }
             }))
         }
@@ -303,7 +299,8 @@ export default function UserManagementPage() {
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="admin">System Administrator</SelectItem>
-                                        <SelectItem value="chp">Community Health Provider (CHP)</SelectItem>
+                                        <SelectItem value="hcw">Health Care Worker (Facility)</SelectItem>
+                                        <SelectItem value="chp">Community Health Provider (Field)</SelectItem>
                                         <SelectItem value="client">Patient / Client</SelectItem>
                                     </SelectContent>
                                 </Select>
@@ -320,7 +317,7 @@ export default function UserManagementPage() {
                                 </div>
                             </div>
 
-                            {(newUser.role === 'admin' || newUser.role === 'chp') && (
+                            {(newUser.role === 'admin' || newUser.role === 'chp' || newUser.role === 'hcw') && (
                                 <>
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Email Address</label>
@@ -333,28 +330,28 @@ export default function UserManagementPage() {
                                 </>
                             )}
 
-                            {newUser.role === 'chp' && (
+                            {(newUser.role === 'chp' || newUser.role === 'hcw') && (
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Username</label>
                                     <Input required placeholder="jane_wanjiku" className="h-12" value={newUser.username} onChange={(e) => setNewUser({ ...newUser, username: e.target.value })} />
                                 </div>
                             )}
 
-                            {(newUser.role === 'chp' || newUser.role === 'client') && (
+                            {(newUser.role === 'chp' || newUser.role === 'hcw' || newUser.role === 'client') && (
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Phone Number</label>
                                     <Input required placeholder="+254712345678" className="h-12" value={newUser.phoneNumber} onChange={(e) => setNewUser({ ...newUser, phoneNumber: e.target.value })} />
                                 </div>
                             )}
 
-                            {(newUser.role === 'client' || newUser.role === 'chp') && (
+                            {(newUser.role === 'client' || newUser.role === 'chp' || newUser.role === 'hcw') && (
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Date of Birth</label>
                                     <Input required type="date" className="h-12" value={newUser.dateOfBirth || "1990-01-01"} onChange={(e) => setNewUser({ ...newUser, dateOfBirth: e.target.value })} />
                                 </div>
                             )}
 
-                            {newUser.role === 'client' && (
+                            {(newUser.role === 'client' || newUser.role === 'chp' || newUser.role === 'hcw') && (
                                 <>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-2">
@@ -426,6 +423,7 @@ export default function UserManagementPage() {
                         options={[
                             { label: "All Roles", value: "all" },
                             { label: "CHPs", value: "chp" },
+                            { label: "HCWs", value: "hcw" },
                             { label: "Clients", value: "client" },
                             { label: "Admins", value: "admin" },
                         ]} 
@@ -489,7 +487,7 @@ export default function UserManagementPage() {
                                                             </span>
                                                         </div>
                                                     </div>
-                                                    {user.type === 'chp' ? (
+                                                    {user.type === 'chp' || user.role === 'HCW' ? (
                                                         <div className="flex items-center gap-6 mt-1.5">
                                                             <div className="flex flex-col">
                                                                 <span className="text-sm font-black text-foreground leading-none">{user.clientsCount}</span>

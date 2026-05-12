@@ -16,10 +16,12 @@ import {
   RotateCcw,
   Download,
   Calendar,
-  Activity,
   FileText,
   MapPin,
+  CheckCircle2,
+  Activity,
 } from "lucide-react";
+import { CompleteReferralDialog } from "@/components/complete-referral-dialog";
 import {
   Popover,
   PopoverContent,
@@ -42,6 +44,8 @@ export default function ReferralsClient() {
   const [limit, setLimit] = useState(10);
   const [sortBy, setSortBy] = useState("createdAt");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [selectedReferral, setSelectedReferral] = useState<any>(null);
+  const [isCompleteDialogOpen, setIsCompleteDialogOpen] = useState(false);
 
   // Build query params
   const queryParams = useMemo(() => {
@@ -222,11 +226,15 @@ export default function ReferralsClient() {
                                       ? "bg-amber-500/10 text-amber-600"
                                       : item.status === "CANCELLED"
                                         ? "bg-rose-500/10 text-rose-600"
-                                        : "bg-muted text-muted-foreground"
+                                        : item.status === "REFUSED"
+                                          ? "bg-red-500/10 text-red-600"
+                                          : item.status === "VISITED_PENDING_RESULTS"
+                                            ? "bg-sky-500/10 text-sky-600"
+                                            : "bg-muted text-muted-foreground"
                                 }
                             `}
               >
-                {item.status || "N/A"}
+                {(item.status || "N/A").replace(/_/g, " ")}
               </Badge>
             ),
             sortable: true,
@@ -256,6 +264,38 @@ export default function ReferralsClient() {
                   <span className="text-[10px] text-muted-foreground">
                     None
                   </span>
+                )}
+              </div>
+            ),
+            className: "text-right",
+          },
+          {
+            header: "Actions",
+            accessorKey: "actions",
+            cell: (item: any) => (
+              <div className="flex justify-end pr-6">
+                {(item.status === "PENDING" || item.status === "VISITED_PENDING_RESULTS") ? (
+                  <Button
+                    size="xs"
+                    className="bg-emerald-600 hover:bg-emerald-700 font-bold gap-1 text-[9px] uppercase tracking-wider"
+                    onClick={() => {
+                      setSelectedReferral(item);
+                      setIsCompleteDialogOpen(true);
+                    }}
+                  >
+                    <CheckCircle2 className="h-3 w-3" />
+                    Complete
+                  </Button>
+                ) : (
+                  <Button
+                    variant="ghost"
+                    size="xs"
+                    className="text-muted-foreground gap-1 text-[9px] uppercase tracking-wider"
+                    disabled
+                  >
+                    <CheckCircle2 className="h-3 w-3" />
+                    {item.status}
+                  </Button>
                 )}
               </div>
             ),
@@ -344,7 +384,9 @@ export default function ReferralsClient() {
                         options={[
                           { label: "All Statuses", value: "all" },
                           { label: "Pending", value: "PENDING" },
+                          { label: "Visited (Pending Results)", value: "VISITED_PENDING_RESULTS" },
                           { label: "Completed", value: "COMPLETED" },
+                          { label: "Refused", value: "REFUSED" },
                           { label: "Cancelled", value: "CANCELLED" },
                         ]}
                         value={statusFilter}
@@ -415,6 +457,14 @@ export default function ReferralsClient() {
           </div>
         }
       />
+      {selectedReferral && (
+        <CompleteReferralDialog
+          referral={selectedReferral}
+          open={isCompleteDialogOpen}
+          onOpenChange={setIsCompleteDialogOpen}
+          onSuccess={() => referralsData.refetch?.() || window.location.reload()}
+        />
+      )}
     </DashboardShell>
   );
 }

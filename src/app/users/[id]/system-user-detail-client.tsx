@@ -326,7 +326,7 @@ export default function SystemUserDetailClient({ id }: { id: string }) {
             refetchUser()
             toast({
                 title: "Role Updated",
-                description: `User role has been set to ${pendingRole}.`,
+                description: `User role has been set to ${pendingRole.toUpperCase()}.`,
                 variant: "success"
             })
         } catch (error) {
@@ -387,7 +387,7 @@ export default function SystemUserDetailClient({ id }: { id: string }) {
         )
     }
 
-    const isChp = user.role === 'chp'
+    const isChp = user.role === 'chp' || user.role === 'hcw'
 
     return (
         <DashboardShell 
@@ -430,7 +430,7 @@ export default function SystemUserDetailClient({ id }: { id: string }) {
                             variant="outline" 
                             className="bg-emerald-50/50 dark:bg-emerald-950/10 text-emerald-600 border-emerald-100 dark:border-emerald-900/30 font-bold px-2.5 py-0.5 rounded-full text-[10px] uppercase tracking-wider mb-4"
                         >
-                            {isChp ? 'Community Health Provider' : 'System Administrator'}
+                            {user.role === 'admin' ? 'System Administrator' : user.role === 'hcw' ? 'Health Care Worker' : 'Community Health Provider'}
                         </Badge>
 
                         {/* Quick Stats Grid */}
@@ -491,7 +491,6 @@ export default function SystemUserDetailClient({ id }: { id: string }) {
                                             variant="outline" 
                                             className="w-full justify-start gap-2 font-bold rounded-xl border-border/60 hover:bg-primary/5 hover:text-primary hover:border-primary/20 h-9 text-xs"
                                             onClick={() => {
-                                                setPendingRole(user.role === 'admin' ? 'chp' : 'admin');
                                                 setIsRoleDialogOpen(true);
                                             }}
                                         >
@@ -1246,27 +1245,42 @@ export default function SystemUserDetailClient({ id }: { id: string }) {
                 </DialogContent>
             </Dialog>
 
-            <AlertDialog open={isRoleDialogOpen} onOpenChange={setIsRoleDialogOpen}>
-                <AlertDialogContent className="bg-background border-border">
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Change User Role?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            Are you sure you want to change the role of <strong>{user.name || user.email}</strong> to <strong>{pendingRole?.toUpperCase()}</strong>?
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel disabled={isSubmitting}>Cancel</AlertDialogCancel>
-                        <AlertDialogAction 
-                            onClick={(e) => { e.preventDefault(); handleSetRole(); }} 
+            <Dialog open={isRoleDialogOpen} onOpenChange={setIsRoleDialogOpen}>
+                <DialogContent className="bg-background border-border sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>Update User Role</DialogTitle>
+                        <DialogDescription>
+                            Select a new role for <strong>{user.name || user.email}</strong>.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                            <label className="text-sm font-bold text-muted-foreground uppercase tracking-tight">Select Role</label>
+                            <Select value={pendingRole || user.role} onValueChange={setPendingRole}>
+                                <SelectTrigger className="h-12 font-medium">
+                                    <SelectValue placeholder="Select a role" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="admin">System Administrator</SelectItem>
+                                    <SelectItem value="hcw">Health Care Worker (Facility)</SelectItem>
+                                    <SelectItem value="chp">Community Health Provider (Field)</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="ghost" onClick={() => setIsRoleDialogOpen(false)} disabled={isSubmitting}>Cancel</Button>
+                        <Button 
+                            onClick={handleSetRole} 
                             className="bg-primary text-primary-foreground"
-                            disabled={isSubmitting}
+                            disabled={isSubmitting || !pendingRole || pendingRole === user.role}
                         >
-                            {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <UserPlus className="h-4 w-4 mr-2" />}
+                            {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <ShieldAlert className="h-4 w-4 mr-2" />}
                             Update Role
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
 
             <AlertDialog open={isRevokeSessionsDialogOpen} onOpenChange={setIsRevokeSessionsDialogOpen}>
                 <AlertDialogContent className="bg-background border-border">

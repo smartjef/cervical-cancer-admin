@@ -14,8 +14,10 @@ import {
     ArrowLeft, 
     Trash2, 
     Edit, 
-    Activity as ActivityIcon 
+    Activity as ActivityIcon,
+    CheckCircle2
 } from "lucide-react"
+import { CompleteReferralDialog } from "@/components/complete-referral-dialog"
 import dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime"
 import Link from "next/link"
@@ -59,6 +61,8 @@ export default function ClientDetailClient({ id }: { id: string }) {
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
     const [isSubmitting, setIsSubmitting] = useState(false)
+    const [selectedReferral, setSelectedReferral] = useState<any>(null)
+    const [isCompleteDialogOpen, setIsCompleteDialogOpen] = useState(false)
 
     // Edit form state
     const [editForm, setEditForm] = useState({
@@ -487,6 +491,29 @@ export default function ClientDetailClient({ id }: { id: string }) {
                                                 )}
                                             </div>
                                         ),
+                                        sortable: false
+                                    },
+                                    {
+                                        header: "Action",
+                                        accessorKey: "action",
+                                        cell: (item: any) => (
+                                            <div className="flex justify-end pr-6">
+                                                {(item.status === "PENDING" || item.status === "VISITED_PENDING_RESULTS") && (
+                                                    <Button
+                                                        size="xs"
+                                                        variant="outline"
+                                                        className="h-7 border-emerald-200 text-emerald-600 hover:bg-emerald-50 font-bold gap-1 text-[9px] uppercase tracking-wider"
+                                                        onClick={() => {
+                                                            setSelectedReferral(item);
+                                                            setIsCompleteDialogOpen(true);
+                                                        }}
+                                                    >
+                                                        <CheckCircle2 className="h-3 w-3" />
+                                                        Complete
+                                                    </Button>
+                                                )}
+                                            </div>
+                                        ),
                                         sortable: false,
                                         className: "text-right pr-6"
                                     }
@@ -683,6 +710,21 @@ export default function ClientDetailClient({ id }: { id: string }) {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
+
+            {selectedReferral && (
+                <CompleteReferralDialog
+                    referral={selectedReferral}
+                    open={isCompleteDialogOpen}
+                    onOpenChange={setIsCompleteDialogOpen}
+                    onSuccess={() => {
+                        // Refresh referrals tab
+                        setReferralsLoading(true)
+                        apiRequest(`/referrals?clientId=${id}`)
+                            .then((data) => setReferralsData(data))
+                            .finally(() => setReferralsLoading(false))
+                    }}
+                />
+            )}
         </DashboardShell>
     )
 }
