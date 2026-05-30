@@ -22,14 +22,14 @@ export default function MapsClient() {
     
     // Fetch all data for the map
     const { data: screeningData, isLoading: screeningsLoading, refetch: refetchScreenings } = useApi<any>(
-        `/screenings?limit=1000&includeForAllProviders=true` +
+        `/screenings?exportAll=true&includeForAllProviders=true` +
         `${providerId !== 'all' ? `&providerId=${providerId}` : ""}` +
         `${clientId !== 'all' ? `&clientId=${clientId}` : ""}`
     )
     
-    const { data: facilitiesData } = useApi<any>("/health-facilities?limit=100")
-    const { data: chpsData } = useApi<any>("/chps?limit=100")
-    const { data: clientsData } = useApi<any>("/clients?limit=100")
+    const { data: facilitiesData } = useApi<any>("/health-facilities?exportAll=true")
+    const { data: chpsData } = useApi<any>("/chps?exportAll=true")
+    const { data: clientsData } = useApi<any>("/clients?exportAll=true")
 
     const resetFilters = () => {
         setProviderId("all")

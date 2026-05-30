@@ -7,6 +7,8 @@ import { signIn } from "@/lib/auth-client";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
+import Cookies from "js-cookie";
+
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -22,20 +24,30 @@ export default function LoginPage() {
     e.preventDefault();
     setIsLoading(true);
     setError("");
-    await signIn.email(
+    const result = await signIn.email(
       {
         email,
         password,
       },
       {
-        onSuccess: () => {
-          router.push("/dashboard");
-        },
         onError: (ctx: any) => {
           setError(ctx.error.message || "Invalid credentials");
         },
       },
     );
+
+    // better-auth returns the token in the response body when cross-origin
+    // (the backend Set-Cookie header won't apply to the frontend domain).
+    // We manually write it so our middleware and API calls can read it.
+    if (result?.data?.token) {
+      Cookies.set("better-auth.session_token", result.data.token, {
+        expires: 7,       // 7 days
+        sameSite: "lax",
+        path: "/",
+      });
+      router.push("/dashboard");
+    }
+
     setIsLoading(false);
   };
   return (

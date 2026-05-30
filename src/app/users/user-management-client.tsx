@@ -55,10 +55,10 @@ export default function UserManagementPage() {
     const pageSize = 5
 
     // 1. Fetch System Users (Admins, CHPs) from Better-Auth Admin API
-    const { data: authData, isLoading: authLoading, refetch: refetchAuth } = useApi<any>("/auth/admin/list-users?limit=100")
+    const { data: authData, isLoading: authLoading, refetch: refetchAuth } = useApi<any>("/auth/admin/list-users?limit=1000")
     
-    // 2. Fetch CHPs to get performance and counts
-    const { data: chpsData, isLoading: chpLoading, refetch: refetchChps } = useApi<any>("/chps?limit=1000")
+    // 2. Fetch CHPs to get performance and counts (use exportAll=true to bypass backend 12-item cap)
+    const { data: chpsData, isLoading: chpLoading, refetch: refetchChps } = useApi<any>("/chps?exportAll=true")
     
     // 3. Fetch Clients from regular Clients API
     const { data: clientData, isLoading: clientLoading, refetch: refetchClients } = useApi<any>(`/clients?limit=1000${search ? `&search=${search}` : ""}`)
@@ -241,7 +241,7 @@ export default function UserManagementPage() {
         }
 
         return results.sort((a, b) => b.lastActive.localeCompare(a.lastActive))
-    }, [authData, clientData, roleFilter, statusFilter, search, systemUsers, chpsData])
+    }, [authData, clientData, roleFilter, statusFilter, search, systemUsers, chpsData, chpLoading])
 
     const totalPages = Math.ceil(usersList.length / pageSize)
     const paginatedUsers = useMemo(() => {
@@ -454,7 +454,7 @@ export default function UserManagementPage() {
                     </div>
 
                     <div className="space-y-2">
-                        {authLoading || clientLoading ? (
+                        {authLoading || clientLoading || chpLoading ? (
                             <div className="space-y-2">
                                 {[1, 2, 3].map((i) => (
                                     <Card key={i} className="border-none animate-pulse">

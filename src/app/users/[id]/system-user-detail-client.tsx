@@ -28,7 +28,8 @@ import {
     ClipboardList, 
     CheckCircle2, 
     AlertCircle, 
-    FileText 
+    FileText,
+    Building2
 } from "lucide-react"
 import dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime"
@@ -469,6 +470,16 @@ export default function SystemUserDetailClient({ id }: { id: string }) {
                                 </div>
                                 <span className="font-medium text-xs">Joined {dayjs(user.createdAt).format('MMM D, YYYY')}</span>
                             </div>
+                            {chpInfo?.healthFacilityId && (
+                                <div className="flex items-center gap-2 text-sm text-muted-foreground group cursor-default">
+                                    <div className="p-1.5 rounded-lg bg-emerald-500/10 group-hover:bg-emerald-500/20 text-emerald-600 transition-colors">
+                                        <Building2 className="h-3.5 w-3.5" />
+                                    </div>
+                                    <Link href={`/facilities/${chpInfo.healthFacilityId}`} className="font-bold text-xs hover:text-emerald-600 transition-colors hover:underline">
+                                        {chpInfo.healthFacility?.name || 'View Assigned Facility'}
+                                    </Link>
+                                </div>
+                            )}
                             <div className="pt-2 flex flex-col gap-1.5">
                                 <Button 
                                     variant="outline" 

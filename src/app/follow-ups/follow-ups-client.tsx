@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Combobox } from "@/components/combobox"
 import { useApi } from "@/hooks/use-api"
+import { apiRequest } from "@/lib/api"
 import { DataTable } from "@/components/data-table"
 import { exportToCSV } from "@/lib/export-utils"
 import Link from "next/link"
@@ -69,11 +70,22 @@ export default function FollowUpsClient() {
     // Fetch Follow-ups
     const { data: followUpsData, isLoading } = useApi<any>(`/follow-up?${queryParams}`)
 
-    // Handle Export
-    const handleExport = () => {
-        if (!followUpsData?.results) return;
+    const [isExporting, setIsExporting] = useState(false);
 
-        const exportData = followUpsData.results.map((item: any) => ({
+    // Handle Export
+    const handleExport = async () => {
+        setIsExporting(true);
+        try {
+            const exportParams = new URLSearchParams(queryParams);
+            exportParams.delete("page");
+            exportParams.delete("limit");
+            exportParams.set("exportAll", "true");
+
+            const res = await apiRequest(`/follow-up?${exportParams.toString()}`);
+            const results = res?.results || [];
+            if (!results.length) return;
+
+            const exportData = results.map((item: any) => ({
             ID: item.id.slice(-6).toUpperCase(),
             Client: `${item.client?.firstName || ''} ${item.client?.lastName || ''}`,
             Category: item.category?.replace(/_/g, " ") || 'N/A',
@@ -92,6 +104,11 @@ export default function FollowUpsClient() {
             { key: 'Status', label: 'Status' },
             { key: 'Trigger', label: 'Trigger Event' },
         ]);
+        } catch (e) {
+            console.error("Export failed", e);
+        } finally {
+            setIsExporting(false);
+        }
     };
 
     const activeFilterCount = [
@@ -347,10 +364,11 @@ export default function FollowUpsClient() {
                                 variant="outline"
                                 size="sm"
                                 onClick={handleExport}
+                                disabled={isExporting}
                                 className="h-11 px-4 gap-2 bg-background font-bold text-[10px] uppercase tracking-wider shrink-0 border-2 hover:bg-muted/50 transition-colors"
                             >
                                 <Download className="h-4 w-4" />
-                                Export
+                                {isExporting ? "Exporting..." : "Export"}
                             </Button>
                         </div>
                     </div>

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Combobox } from "@/components/combobox";
 import { useApi } from "@/hooks/use-api";
+import { apiRequest } from "@/lib/api";
 import { DataTable } from "@/components/data-table";
 import { exportToCSV } from "@/lib/export-utils";
 import Link from "next/link";
@@ -194,11 +195,22 @@ export default function FacilitiesClient() {
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
-  // Handle Export
-  const handleExport = () => {
-    if (!facilitiesData?.results) return;
+  const [isExporting, setIsExporting] = useState(false);
 
-    const exportData = facilitiesData.results.map((item: any) => ({
+  // Handle Export
+  const handleExport = async () => {
+    setIsExporting(true);
+    try {
+      const exportParams = new URLSearchParams(queryParams);
+      exportParams.delete("page");
+      exportParams.delete("limit");
+      exportParams.set("exportAll", "true");
+
+      const res = await apiRequest(`/health-facilities?${exportParams.toString()}`);
+      const results = res?.results || [];
+      if (!results.length) return;
+
+      const exportData = results.map((item: any) => ({
       Name: item.name,
       Code: item.kmflCode,
       Type: item.type?.name || "N/A",
@@ -221,6 +233,11 @@ export default function FacilitiesClient() {
       { key: "Phone", label: "Phone" },
       { key: "Email", label: "Email" },
     ]);
+    } catch (e) {
+      console.error("Export failed", e);
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   return (
@@ -466,10 +483,11 @@ export default function FacilitiesClient() {
                 variant="outline"
                 size="sm"
                 onClick={handleExport}
+                disabled={isExporting}
                 className="h-11 px-4 gap-2 bg-background font-bold text-[10px] uppercase tracking-wider shrink-0 border-2 hover:bg-muted/50 transition-colors"
               >
                 <Download className="h-4 w-4" />
-                Export
+                {isExporting ? "Exporting..." : "Export"}
               </Button>
 
               <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>

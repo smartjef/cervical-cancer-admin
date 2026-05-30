@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/combobox";
 import { useApi } from "@/hooks/use-api";
+import { apiRequest } from "@/lib/api";
 import {
   TrendingUp,
   AlertTriangle,
@@ -201,32 +202,71 @@ export default function ScreeningDataPage() {
     setMounted(true);
   }, []);
 
-  // Handle Export
-  const handleExport = () => {
-    if (!screeningsData?.results) return;
+  const [isExporting, setIsExporting] = useState(false);
 
-    const exportData = screeningsData.results.map((item: any) => ({
-      ID: item.id.slice(-6).toUpperCase(),
-      Client: `${item.client?.firstName} ${item.client?.lastName}`,
-      Provider: `${item.provider?.firstName} ${item.provider?.lastName}`,
-      Location: `${item.client?.ward || ""}, ${item.client?.subcounty || ""}`,
-      RiskLevel:
-        item.scoringResult?.interpretation?.replace("_RISK", "") || "N/A",
-      Score: item.scoringResult?.aggregateScore || 0,
-      Age: item.scoringResult?.clientAge || "N/A",
-      Date: dayjs(item.createdAt).format("YYYY-MM-DD HH:mm"),
-    }));
+  // Handle Export - fetches ALL records (not just current page)
+  const handleExport = async () => {
+    setIsExporting(true);
+    try {
+      // Build export query using current filters with exportAll=true to get all records
+      const exportParams = new URLSearchParams();
+      exportParams.set("exportAll", "true");
+      exportParams.set("includeForAllProviders", "true");
+      if (search) exportParams.set("search", search);
+      if (sortBy) exportParams.set("sortBy", sortBy);
+      if (sortOrder) exportParams.set("sortOrder", sortOrder.toUpperCase());
+      if (chpFilter !== "all") exportParams.set("providerId", chpFilter);
+      if (riskLevel !== "all") exportParams.set("risk", riskLevel.toUpperCase() + "_RISK");
+      if (countyFilter !== "all") {
+        const county = countyOptions.find((o) => o.value === countyFilter);
+        if (county) exportParams.set("county", county.label);
+      }
+      if (subcountyFilter !== "all") {
+        const subcounty = subcountyOptions.find((o) => o.value === subcountyFilter);
+        if (subcounty) exportParams.set("subcounty", subcounty.label);
+      }
+      if (wardFilter !== "all") {
+        const ward = wardOptions.find((o) => o.value === wardFilter);
+        if (ward) exportParams.set("ward", ward.label);
+      }
+      if (dateRange !== "all") {
+        const days = parseInt(dateRange);
+        exportParams.set("screeningDateFrom", dayjs().subtract(days, "day").toISOString());
+        exportParams.set("screeningDateTo", dayjs().toISOString());
+      }
 
-    exportToCSV(exportData, "screenings-export", [
-      { key: "ID", label: "Screening ID" },
-      { key: "Client", label: "Client Name" },
-      { key: "Provider", label: "Provider" },
-      { key: "Location", label: "Location" },
-      { key: "RiskLevel", label: "Risk Level" },
-      { key: "Score", label: "Score" },
-      { key: "Age", label: "Client Age" },
-      { key: "Date", label: "Screening Date" },
-    ]);
+      const allData = await apiRequest(`/screenings?${exportParams.toString()}`);
+      const results = allData?.results || [];
+
+      if (results.length === 0) return;
+
+      const exportData = results.map((item: any) => ({
+        ID: item.id.slice(-6).toUpperCase(),
+        Client: `${item.client?.firstName} ${item.client?.lastName}`,
+        Provider: `${item.provider?.firstName} ${item.provider?.lastName}`,
+        Location: `${item.client?.ward || ""}, ${item.client?.subcounty || ""}`,
+        RiskLevel:
+          item.scoringResult?.interpretation?.replace("_RISK", "") || "N/A",
+        Score: item.scoringResult?.aggregateScore || 0,
+        Age: item.scoringResult?.clientAge || "N/A",
+        Date: dayjs(item.createdAt).format("YYYY-MM-DD HH:mm"),
+      }));
+
+      exportToCSV(exportData, "screenings-export", [
+        { key: "ID", label: "Screening ID" },
+        { key: "Client", label: "Client Name" },
+        { key: "Provider", label: "Provider" },
+        { key: "Location", label: "Location" },
+        { key: "RiskLevel", label: "Risk Level" },
+        { key: "Score", label: "Score" },
+        { key: "Age", label: "Client Age" },
+        { key: "Date", label: "Screening Date" },
+      ]);
+    } catch (e) {
+      console.error("Export failed", e);
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   const stats = useMemo(() => {
@@ -759,10 +799,11 @@ export default function ScreeningDataPage() {
                 variant="outline"
                 size="sm"
                 onClick={handleExport}
+                disabled={isExporting}
                 className="h-11 px-4 gap-2 bg-background font-bold text-[10px] uppercase tracking-wider shrink-0 border-2 hover:bg-muted/50 transition-colors"
               >
-                <Download className="h-4 w-4" />
-                Export
+                {isExporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                {isExporting ? "Exporting..." : "Export"}
               </Button>
             </div>
           </div>

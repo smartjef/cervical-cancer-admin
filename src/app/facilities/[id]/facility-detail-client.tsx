@@ -6,6 +6,7 @@ import DashboardShell from "@/components/dashboard-shell"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Combobox } from "@/components/combobox"
 import { DataTable } from "@/components/data-table"
 import { useApi } from "@/hooks/use-api"
 import { 
@@ -15,9 +16,13 @@ import {
     Mail, 
     Building2, 
     Calendar, 
-    Activity, 
+    Activity,
     Edit, 
-    Trash2 
+    Trash2,
+    UserPlus,
+    User,
+    Loader2,
+    Save
 } from "lucide-react"
 import dayjs from "dayjs"
 import Link from "next/link"
@@ -26,7 +31,8 @@ import {
     DialogContent, 
     DialogHeader, 
     DialogTitle, 
-    DialogTrigger 
+    DialogTrigger,
+    DialogDescription
 } from "@/components/ui/dialog"
 import { 
     AlertDialog, 
@@ -58,6 +64,11 @@ export default function FacilityDetailClient({ id }: FacilityDetailClientProps) 
     const [page, setPage] = useState(1)
     const [limit, setLimit] = useState(10)
 
+    // Assign HCW states
+    const [isAssignOpen, setIsAssignOpen] = useState(false)
+    const [selectedHcwId, setSelectedHcwId] = useState<string>("")
+    const [isSubmitting, setIsSubmitting] = useState(false)
+
     // Fetch Facility Details
     const { data: facility, isLoading: facilityLoading } = useApi<any>(`/health-facilities/${id}`)
 
@@ -65,6 +76,43 @@ export default function FacilityDetailClient({ id }: FacilityDetailClientProps) 
     const { data: referralsData, isLoading: referralsLoading } = useApi<any>(
         activeTab === "referrals" ? `/referrals?healthFacilityId=${id}&page=${page}&limit=${limit}&includeRelations=true` : null
     )
+
+    // Fetch HCWs for assignment
+    const { data: chpsData } = useApi<any>("/chps?exportAll=true")
+    const hcwOptions = chpsData?.results?.filter((c: any) => c.user?.role === 'hcw')?.map((c: any) => ({
+        label: c.user?.name || `${c.firstName} ${c.lastName}`.trim() || c.user?.email || 'Unknown',
+        value: c.id
+    })) || []
+    const assignedHcws = chpsData?.results?.filter((c: any) => c.healthFacilityId === id) || []
+    const hasAssignedHcw = assignedHcws.length > 0
+
+    const handleAssignHcw = async () => {
+        if (!selectedHcwId) return
+        setIsSubmitting(true)
+        try {
+            await apiRequest(`/provider-facilities`, {
+                method: 'POST',
+                body: JSON.stringify({ providerId: selectedHcwId, facilityId: id })
+            })
+            setIsAssignOpen(false)
+            toast({
+                title: "HCW Assigned",
+                description: "The Health Care Worker has been successfully assigned to this facility.",
+                variant: "success"
+            })
+            // Optionally clear the selection
+            setSelectedHcwId("")
+        } catch (error: any) {
+            console.error("Failed to assign HCW:", error)
+            toast({
+                title: "Error",
+                description: "Failed to assign HCW to facility.",
+                variant: "destructive"
+            })
+        } finally {
+            setIsSubmitting(false)
+        }
+    }
 
     const handleDelete = async () => {
         setIsDeleting(true)
@@ -232,6 +280,59 @@ export default function FacilityDetailClient({ id }: FacilityDetailClientProps) 
                                         </div>
                                     </DialogContent>
                                 </Dialog>
+
+                                {hasAssignedHcw ? (
+                                    <div className="flex flex-col gap-2">
+                                        {assignedHcws.map((hcw: any) => (
+                                            <Link key={hcw.id} href={`/users/${hcw.userId}`}>
+                                                <Button variant="outline" className="w-full h-11 gap-2 border-2 border-primary/20 text-primary font-black text-[10px] uppercase tracking-widest hover:bg-primary/5 transition-colors">
+                                                    <User className="h-4 w-4" />
+                                                    {hcw.user?.name || `${hcw.firstName} ${hcw.lastName}`.trim() || hcw.user?.email || 'View HCW'}
+                                                </Button>
+                                            </Link>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <Dialog open={isAssignOpen} onOpenChange={setIsAssignOpen}>
+                                        <DialogTrigger asChild>
+                                            <Button variant="outline" className="w-full h-11 gap-2 border-2 border-emerald-200 text-emerald-700 font-black text-[10px] uppercase tracking-widest hover:bg-emerald-50 hover:text-emerald-800 transition-colors">
+                                                <UserPlus className="h-4 w-4" />
+                                                Assign HCW
+                                            </Button>
+                                        </DialogTrigger>
+                                        <DialogContent className="sm:max-w-md bg-background border-border">
+                                            <DialogHeader>
+                                                <DialogTitle>Assign Health Care Worker</DialogTitle>
+                                                <DialogDescription>
+                                                    Select a Health Care Worker (HCW) to assign to <strong>{facility.name}</strong>.
+                                                </DialogDescription>
+                                            </DialogHeader>
+                                            <div className="space-y-4 py-4">
+                                                <div className="space-y-2 flex flex-col">
+                                                    <label className="text-sm font-bold text-muted-foreground uppercase tracking-tight">Select Worker</label>
+                                                    <Combobox 
+                                                        options={hcwOptions} 
+                                                        value={selectedHcwId} 
+                                                        onValueChange={setSelectedHcwId} 
+                                                        placeholder="Search for an HCW..." 
+                                                        className="w-full h-12 border-2 bg-card" 
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div className="flex justify-end gap-3 pt-4">
+                                                <Button variant="ghost" onClick={() => setIsAssignOpen(false)} disabled={isSubmitting}>Cancel</Button>
+                                                <Button 
+                                                    onClick={handleAssignHcw} 
+                                                    className="bg-primary text-primary-foreground"
+                                                    disabled={isSubmitting || !selectedHcwId}
+                                                >
+                                                    {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
+                                                    Assign to Facility
+                                                </Button>
+                                            </div>
+                                        </DialogContent>
+                                    </Dialog>
+                                )}
 
                                 <AlertDialog>
                                     <AlertDialogTrigger asChild>

@@ -79,10 +79,20 @@ const reportTypes = [
   },
 ];
 
+// Helper: fetch all records using exportAll=true (bypasses backend 100-record limit cap)
+async function fetchAllRecords(baseEndpoint: string): Promise<any[]> {
+  const sep = baseEndpoint.includes("?") ? "&" : "?";
+  const response = await apiRequest(`${baseEndpoint}${sep}exportAll=true`);
+  const results = response?.results ?? (Array.isArray(response) ? response : []);
+  return results;
+}
+
 export default function ReportsPage() {
   const [selectedType, setSelectedType] = useState("screening_summary");
   const [isGenerating, setIsGenerating] = useState(false);
   const [dateRange, setDateRange] = useState("7");
+  const [customFrom, setCustomFrom] = useState(dayjs().subtract(30, "day").format("YYYY-MM-DD"));
+  const [customTo, setCustomTo] = useState(dayjs().format("YYYY-MM-DD"));
   const [format, setFormat] = useState("pdf"); // pdf, excel, csv
   const { toast } = useToast();
 
@@ -90,22 +100,25 @@ export default function ReportsPage() {
     "/admin/dashboard/summary",
   );
 
-  const handleGenerateReport = async () => {
+  const handleGenerateReport = async (typeOverride?: string) => {
     setIsGenerating(true);
+    const activeType = typeOverride ?? selectedType;
     try {
       let endpoint = "";
       let filename = "";
       let columns: { key: string; label: string }[] = [];
 
-      const dateTo = dayjs().toISOString();
-      const dateFrom = dayjs()
-        .subtract(parseInt(dateRange), "day")
-        .toISOString();
-      const queryParams = `?screeningDateFrom=${dateFrom}&screeningDateTo=${dateTo}&limit=1000`;
+      const dateTo = dateRange === "custom"
+        ? dayjs(customTo).endOf("day").toISOString()
+        : dayjs().toISOString();
+      const dateFrom = dateRange === "custom"
+        ? dayjs(customFrom).startOf("day").toISOString()
+        : dayjs().subtract(parseInt(dateRange), "day").toISOString();
+      const baseQueryParams = `?screeningDateFrom=${dateFrom}&screeningDateTo=${dateTo}`;
 
-      switch (selectedType) {
+      switch (activeType) {
         case "screening_summary":
-          endpoint = `/screenings${queryParams}`;
+          endpoint = `/screenings${baseQueryParams}`;
           filename = `screening-summary-${dayjs().format("YYYY-MM-DD")}`;
           columns = [
             { key: format === "pdf" ? "idShort" : "id", label: "SCREENING ID" },
@@ -119,7 +132,7 @@ export default function ReportsPage() {
           ];
           break;
         case "client_report":
-          endpoint = `/clients${queryParams}`;
+          endpoint = `/clients${baseQueryParams}`;
           filename = `client-database-${dayjs().format("YYYY-MM-DD")}`;
           columns = [
             { key: "fullName", label: "Name" },
@@ -130,7 +143,7 @@ export default function ReportsPage() {
           ];
           break;
         case "chp_performance":
-          endpoint = `/admin/dashboard/chp-performance${queryParams}`;
+          endpoint = `/admin/dashboard/chp-performance${baseQueryParams}`;
           filename = `chp-performance-${dayjs().format("YYYY-MM-DD")}`;
           columns = [
             { key: "name", label: "Name" },
@@ -142,7 +155,7 @@ export default function ReportsPage() {
           ];
           break;
         case "compliance_quality":
-          endpoint = `/referrals${queryParams}`;
+          endpoint = `/referrals${baseQueryParams}`;
           filename = `referral-report-${dayjs().format("YYYY-MM-DD")}`;
           columns = [
             { key: format === "pdf" ? "idShort" : "id", label: "ID" },
@@ -163,9 +176,8 @@ export default function ReportsPage() {
           return;
       }
 
-      const response = await apiRequest(endpoint);
-      const data = response.results || response || [];
-      const finalDataRaw = Array.isArray(data) ? data : data.results || [];
+      // Fetch ALL pages to overcome backend pagination cap
+      const finalDataRaw = await fetchAllRecords(endpoint);
 
       if (finalDataRaw.length === 0) {
         toast({
@@ -179,7 +191,7 @@ export default function ReportsPage() {
       // Data Transformation
       const finalData = finalDataRaw.map((item: any) => {
         const mapped: any = { ...item };
-        if (selectedType === "compliance_quality") {
+        if (activeType === "compliance_quality") {
           mapped.idShort = (item.id || "").substring(0, 5).toUpperCase();
           mapped.clientName = item.screening?.client
             ? `${item.screening.client.firstName} ${item.screening.client.lastName}`
@@ -190,12 +202,12 @@ export default function ReportsPage() {
             ? dayjs(item.appointmentTime).format("YYYY-MM-DD HH:mm")
             : "N/A";
         }
-        if (selectedType === "client_report") {
+        if (activeType === "client_report") {
           mapped.fullName = `${item.firstName} ${item.lastName}`;
           mapped.locationInfo = `${item.county}, ${item.subcounty}`;
           mapped.createdAt = dayjs(item.createdAt).format("YYYY-MM-DD");
         }
-        if (selectedType === "screening_summary") {
+        if (activeType === "screening_summary") {
           mapped.idShort = (item.id || "").substring(0, 5).toUpperCase();
           mapped.clientName = item.client
             ? `${item.client.firstName} ${item.client.lastName}`
@@ -536,8 +548,35 @@ export default function ReportsPage() {
                       <SelectItem value="7">Last 7 days</SelectItem>
                       <SelectItem value="30">Last 30 days</SelectItem>
                       <SelectItem value="90">Last 90 days</SelectItem>
+                      <SelectItem value="365">Last 1 year</SelectItem>
+                      <SelectItem value="custom">Custom Range</SelectItem>
                     </SelectContent>
                   </Select>
+                  {dateRange === "custom" && (
+                    <div className="grid grid-cols-2 gap-2 pt-1">
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">From</label>
+                        <input
+                          type="date"
+                          value={customFrom}
+                          max={customTo}
+                          onChange={(e) => setCustomFrom(e.target.value)}
+                          className="w-full h-10 px-3 rounded-md bg-muted/50 border border-border text-foreground text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/50"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">To</label>
+                        <input
+                          type="date"
+                          value={customTo}
+                          min={customFrom}
+                          max={dayjs().format("YYYY-MM-DD")}
+                          onChange={(e) => setCustomTo(e.target.value)}
+                          className="w-full h-10 px-3 rounded-md bg-muted/50 border border-border text-foreground text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/50"
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-muted-foreground">
@@ -557,7 +596,7 @@ export default function ReportsPage() {
 
               <Button
                 disabled={isGenerating}
-                onClick={handleGenerateReport}
+                onClick={() => handleGenerateReport()}
                 className="w-full h-12 bg-primary hover:bg-primary/90 text-white font-bold gap-2"
               >
                 {isGenerating ? (
@@ -583,7 +622,7 @@ export default function ReportsPage() {
                 variant="outline"
                 onClick={() => {
                   setSelectedType("screening_summary");
-                  handleGenerateReport();
+                  handleGenerateReport("screening_summary");
                 }}
                 className="w-full justify-between h-11 border-border bg-card text-sm font-bold text-muted-foreground hover:text-foreground group px-4"
               >
@@ -596,7 +635,7 @@ export default function ReportsPage() {
                 variant="outline"
                 onClick={() => {
                   setSelectedType("chp_performance");
-                  handleGenerateReport();
+                  handleGenerateReport("chp_performance");
                 }}
                 className="h-11 justify-between w-full border-border bg-card text-sm font-bold text-muted-foreground hover:text-foreground group px-4"
               >
@@ -610,7 +649,7 @@ export default function ReportsPage() {
                 onClick={async () => {
                   setIsGenerating(true);
                   try {
-                    const res = await apiRequest("/clients?limit=1000");
+                    const res = await apiRequest("/clients?exportAll=true");
                     const data = res.results || [];
                     exportToCSV(
                       data,
