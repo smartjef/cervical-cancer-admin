@@ -286,9 +286,11 @@ export default function ReportsPage() {
         const mappedData = data.map((item) => ({
           Client: `${item.client?.firstName} ${item.client?.lastName}`,
           Age: item.scoringResult?.clientAge,
+          Gender: "Female",
           Location: `${item.client?.ward}, ${item.client?.subcounty}`,
           Date: dayjs(item.createdAt).format("YYYY-MM-DD HH:mm"),
           CHP: `${item.provider?.firstName} ${item.provider?.lastName}`,
+          "CHP Phone": item.provider?.phoneNumber || "N/A",
           Risk: item.scoringResult?.interpretation,
           Score: item.scoringResult?.aggregateScore,
           "Referred To": item.referrals?.map((r: any) => r.healthFacility?.name).join("; ") || "None",
@@ -296,6 +298,7 @@ export default function ReportsPage() {
           "Tests": item.referrals?.map((r: any) => r.tests?.map((t: any) => t.testType?.replace(/_/g, " ")).join(", ") || "None").join("; ") || "N/A",
           "Test Results": item.referrals?.map((r: any) => r.tests?.map((t: any) => t.testResult?.replace(/_/g, " ")).join(", ") || "None").join("; ") || "N/A",
           "Treatment": item.referrals?.map((r: any) => r.tests?.map((t: any) => t.actionTaken?.replace(/_/g, " ") || "Pending").join(", ") || "None").join("; ") || "N/A",
+          "Test Time": item.referrals?.map((r: any) => r.tests?.map((t: any) => dayjs(t.createdAt).format("YYYY-MM-DD HH:mm")).join(", ") || "None").join("; ") || "N/A",
         }));
         headers = Object.keys(mappedData[0] || {});
         rows = mappedData.map(obj => Object.values(obj));
