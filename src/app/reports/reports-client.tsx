@@ -19,6 +19,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { apiRequest } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 
 // Helper for exporting
 async function fetchAllRecords(baseEndpoint: string): Promise<any[]> {
@@ -30,8 +31,21 @@ async function fetchAllRecords(baseEndpoint: string): Promise<any[]> {
 
 export default function ReportsPage() {
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState("screenings");
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  
+  const initialTab = searchParams.get("tab") || "screenings";
+  const [activeTab, setActiveTab] = useState(initialTab);
   const [filters, setFilters] = useState<FilterState | null>(null);
+
+  // Sync tab with URL
+  const handleTabChange = (val: string) => {
+    setActiveTab(val);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("tab", val);
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  };
   
   // Pagination
   const [screeningPagination, setScreeningPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 20 });
@@ -72,7 +86,7 @@ export default function ReportsPage() {
       params.append("screeningDateTo", toDate.toISOString());
     }
 
-    if (filters.chpId && filters.chpId !== "all") params.append("providerId", filters.chpId);
+    if (filters.chpId && filters.chpId.length > 0 && !filters.chpId.includes("all")) params.append("providerId", filters.chpId.join(","));
     if (filters.facilityId && filters.facilityId !== "all") params.append("facilityId", filters.facilityId);
     if (filters.referralStatus && filters.referralStatus !== "all") {
       if (filters.referralStatus === "referred" || filters.referralStatus === "not_referred") {
@@ -82,7 +96,7 @@ export default function ReportsPage() {
       }
     }
     if (filters.treatmentStatus && filters.treatmentStatus !== "all") params.append("treatmentStatus", filters.treatmentStatus);
-    if (filters.riskLevel && filters.riskLevel !== "all") params.append("risk", filters.riskLevel);
+    if (filters.riskLevel && filters.riskLevel.length > 0 && !filters.riskLevel.includes("all")) params.append("risk", filters.riskLevel.join(","));
     if (filters.search) params.append("search", filters.search);
     if (filters.county) params.append("county", filters.county);
     if (filters.subcounty) params.append("subcounty", filters.subcounty);
@@ -98,7 +112,8 @@ export default function ReportsPage() {
   const chpUrl = filters ? `/admin/dashboard/chp-performance${buildQueryParams(chpPagination)}` : null;
   const { data: chpData, isLoading: isLoadingChp } = useApi<any>(chpUrl);
 
-  const { data: dashboardData } = useApi<any>("/admin/dashboard/summary");
+  const dashboardUrl = filters ? `/admin/dashboard/summary${buildQueryParams({ pageIndex: 0, pageSize: 1 })}` : null;
+  const { data: dashboardData } = useApi<any>(dashboardUrl);
 
   // Columns for Screenings
   const screeningColumns: ColumnDef<any, any>[] = useMemo(() => [
@@ -160,32 +175,46 @@ export default function ReportsPage() {
       cell: (info) => <span className="font-black text-primary">{info.getValue()}</span>,
     },
     {
-      id: "referral",
-      accessorFn: (row) => row.referrals?.length > 0 ? "Referred" : "None",
-      header: "Referral",
+      id: "referredTo",
+      accessorFn: (row) => row.referrals?.map((r: any) => r.healthFacility?.name).join("; ") || "None",
+      header: "Referred To",
+      cell: (info) => <span className="text-xs">{info.getValue() as string}</span>,
+    },
+    {
+      id: "referralTime",
+      accessorFn: (row) => row.referrals?.map((r: any) => dayjs(r.createdAt).format("YYYY-MM-DD HH:mm")).join("; ") || "N/A",
+      header: "Referral Time",
+      cell: (info) => <span className="text-xs text-muted-foreground">{info.getValue() as string}</span>,
+    },
+    {
+      id: "tests",
+      accessorFn: (row) => row.referrals?.map((r: any) => r.tests?.map((t: any) => t.testType?.replace(/_/g, " ")).join(", ") || "None").join("; ") || "N/A",
+      header: "Tests",
+      cell: (info) => <span className="text-xs font-medium">{info.getValue() as string}</span>,
+    },
+    {
+      id: "testResults",
+      accessorFn: (row) => row.referrals?.map((r: any) => r.tests?.map((t: any) => t.testResult?.replace(/_/g, " ")).join(", ") || "None").join("; ") || "N/A",
+      header: "Test Results",
       cell: (info) => {
         const val = info.getValue() as string;
-        return val === "Referred" ? (
-          <Badge variant="outline" className="border-orange-500 text-orange-500">Referred</Badge>
-        ) : (
-          <span className="text-muted-foreground text-xs">None</span>
-        );
+        return <span className={`text-xs ${val.includes("POSITIVE") ? "text-destructive font-bold" : ""}`}>{val}</span>;
       }
     },
     {
       id: "treatment",
-      accessorFn: (row) => {
-        const refs = row.referrals || [];
-        const hasTreatment = refs.some((r: any) => r.tests?.some((t: any) => t.actionTaken === "TREATED"));
-        return hasTreatment ? "Treated" : refs.length > 0 ? "Pending" : "N/A";
-      },
+      accessorFn: (row) => row.referrals?.map((r: any) => r.tests?.map((t: any) => t.actionTaken?.replace(/_/g, " ") || "Pending").join(", ") || "None").join("; ") || "N/A",
       header: "Treatment",
       cell: (info) => {
         const val = info.getValue() as string;
-        if (val === "Treated") return <Badge variant="outline" className="border-emerald-500 text-emerald-500">Treated</Badge>;
-        if (val === "Pending") return <Badge variant="outline" className="border-yellow-500 text-yellow-500">Pending</Badge>;
-        return <span className="text-muted-foreground text-xs">N/A</span>;
+        return <span className={`text-xs ${val.includes("TREATED") ? "text-emerald-500 font-bold" : ""}`}>{val}</span>;
       }
+    },
+    {
+      id: "testTime",
+      accessorFn: (row) => row.referrals?.map((r: any) => r.tests?.map((t: any) => dayjs(t.createdAt).format("YYYY-MM-DD HH:mm")).join(", ") || "None").join("; ") || "N/A",
+      header: "Test Time",
+      cell: (info) => <span className="text-xs text-muted-foreground">{info.getValue() as string}</span>,
     }
   ], []);
 
@@ -231,7 +260,6 @@ export default function ReportsPage() {
       { label: "Total Screenings", value: dashboardData.stats.totalScreenings || 0, icon: Activity, colorClass: "text-blue-500" },
       { label: "Total Clients", value: dashboardData.stats.totalClients || 0, icon: Users, colorClass: "text-emerald-500" },
       { label: "High Risk", value: dashboardData.stats.highRiskCount || 0, icon: AlertTriangle, colorClass: "text-orange-500" },
-      { label: "Critical Risk", value: dashboardData.stats.criticalRiskCount || 0, icon: ShieldAlert, colorClass: "text-destructive" },
       { label: "Referred", value: dashboardData.stats.referredCount || 0, icon: Target, colorClass: "text-purple-500" },
       { label: "Treated", value: dashboardData.stats.treatedCount || 0, icon: CheckCircle, colorClass: "text-emerald-500" },
       { label: "Pending Treatment", value: dashboardData.stats.pendingTreatmentCount || 0, icon: Clock, colorClass: "text-yellow-500" },
@@ -240,7 +268,7 @@ export default function ReportsPage() {
   }, [dashboardData]);
 
   // Export Logic
-  const handleExport = async () => {
+  const handleExport = async (format: "csv" | "pdf") => {
     try {
       const endpoint = activeTab === "screenings" ? `/screenings${buildQueryParams({ pageIndex: 0, pageSize: 1 })}` : `/admin/dashboard/chp-performance${buildQueryParams({ pageIndex: 0, pageSize: 1 })}`;
       const data = await fetchAllRecords(endpoint);
@@ -249,6 +277,10 @@ export default function ReportsPage() {
         toast({ title: "No Data", description: "No records found.", variant: "destructive" });
         return;
       }
+
+      let headers: string[] = [];
+      let rows: any[] = [];
+      let filename = "";
 
       if (activeTab === "screenings") {
         const mappedData = data.map((item) => ({
@@ -264,17 +296,46 @@ export default function ReportsPage() {
           "Tests": item.referrals?.map((r: any) => r.tests?.map((t: any) => t.testType?.replace(/_/g, " ")).join(", ") || "None").join("; ") || "N/A",
           "Test Results": item.referrals?.map((r: any) => r.tests?.map((t: any) => t.testResult?.replace(/_/g, " ")).join(", ") || "None").join("; ") || "N/A",
           "Treatment": item.referrals?.map((r: any) => r.tests?.map((t: any) => t.actionTaken?.replace(/_/g, " ") || "Pending").join(", ") || "None").join("; ") || "N/A",
-          "Test Time": item.referrals?.map((r: any) => r.tests?.map((t: any) => dayjs(t.createdAt).format("YYYY-MM-DD HH:mm")).join(", ") || "None").join("; ") || "N/A",
         }));
-        exportToCSV(mappedData, `screening-report-${dayjs().format("YYYY-MM-DD")}`, Object.keys(mappedData[0]).map(k => ({ key: k, label: k })));
+        headers = Object.keys(mappedData[0] || {});
+        rows = mappedData.map(obj => Object.values(obj));
+        filename = `screening-report-${dayjs().format("YYYY-MM-DD")}`;
+        
+        if (format === "csv") {
+          exportToCSV(mappedData, filename, headers.map(k => ({ key: k, label: k })));
+        }
       } else {
-        exportToCSV(data, `chp-report-${dayjs().format("YYYY-MM-DD")}`, [
-          { key: "name", label: "Name" },
-          { key: "email", label: "Email" },
-          { key: "totalScreening", label: "Screenings" },
-          { key: "overallPerformance", label: "Performance" }
-        ]);
+        headers = ["Name", "Email", "Screenings", "Performance"];
+        rows = data.map(item => [item.name, item.email, item.totalScreening, item.overallPerformance]);
+        filename = `chp-report-${dayjs().format("YYYY-MM-DD")}`;
+        
+        if (format === "csv") {
+          exportToCSV(data, filename, [
+            { key: "name", label: "Name" },
+            { key: "email", label: "Email" },
+            { key: "totalScreening", label: "Screenings" },
+            { key: "overallPerformance", label: "Performance" }
+          ]);
+        }
       }
+
+      if (format === "pdf") {
+        const doc = new jsPDF("landscape");
+        doc.text(activeTab === "screenings" ? "Screening Report" : "CHP Performance Report", 14, 15);
+        doc.setFontSize(10);
+        doc.text(`Generated on ${dayjs().format("YYYY-MM-DD HH:mm")}`, 14, 22);
+        
+        autoTable(doc, {
+          head: [headers],
+          body: rows,
+          startY: 28,
+          styles: { fontSize: 8 },
+          headStyles: { fillColor: [41, 128, 185] },
+        });
+        
+        doc.save(`${filename}.pdf`);
+      }
+
       toast({ title: "Export Successful", variant: "success" });
     } catch (e) {
       toast({ title: "Export Failed", variant: "destructive" });
@@ -291,7 +352,7 @@ export default function ReportsPage() {
         </div>
 
         {/* Tabs and Data */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="flex-1 flex flex-col min-h-0">
           <div className="flex items-center justify-between mb-4">
             <TabsList className="bg-muted/50 p-1">
               <TabsTrigger value="screenings" className="text-xs font-bold uppercase tracking-wider">Screening Reports</TabsTrigger>
@@ -319,8 +380,8 @@ export default function ReportsPage() {
             <div className="flex-1 overflow-auto bg-card border rounded-md shadow-sm p-4">
               <EnterpriseTable 
                 columns={chpColumns} 
-                data={chpData?.results || []}
-                pageCount={chpData?.totalPages || 1}
+                data={Array.isArray(chpData) ? chpData : chpData?.results || []}
+                pageCount={Array.isArray(chpData) ? 1 : chpData?.totalPages || 1}
                 pagination={chpPagination}
                 onPaginationChange={setChpPagination}
                 isLoading={isLoadingChp}

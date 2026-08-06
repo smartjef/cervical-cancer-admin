@@ -12,7 +12,11 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Filter, RefreshCcw, Download } from "lucide-react";
+import { Search, Filter, RefreshCcw, Download, Check, ChevronsUpDown } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { cn } from "@/lib/utils";
 import dayjs from "dayjs";
 import { useApi } from "@/hooks/use-api";
 
@@ -20,11 +24,11 @@ export interface FilterState {
   dateRange: string;
   customDateFrom?: string;
   customDateTo?: string;
-  chpId: string;
+  chpId: string[];
   facilityId: string;
   referralStatus: string;
   treatmentStatus: string;
-  riskLevel: string;
+  riskLevel: string[];
   search: string;
   county: string;
   subcounty: string;
@@ -33,17 +37,17 @@ export interface FilterState {
 
 interface GlobalFilterBarProps {
   onFilterChange: (filters: FilterState) => void;
-  onExport: () => void;
+  onExport: (format: "csv" | "pdf") => void;
 }
 
 export function GlobalFilterBar({ onFilterChange, onExport }: GlobalFilterBarProps) {
   const [filters, setFilters] = useState<FilterState>({
     dateRange: "30",
-    chpId: "all",
+    chpId: ["all"],
     facilityId: "all",
     referralStatus: "all",
     treatmentStatus: "all",
-    riskLevel: "all",
+    riskLevel: ["all"],
     search: "",
     county: "",
     subcounty: "",
@@ -53,8 +57,20 @@ export function GlobalFilterBar({ onFilterChange, onExport }: GlobalFilterBarPro
   const { data: chpsData } = useApi<any>("/chps?limit=100");
   const chps = chpsData?.results || [];
 
-  const handleFilterChange = (key: keyof FilterState, value: string) => {
+  const handleFilterChange = (key: keyof FilterState, value: any) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const toggleMultiSelect = (key: "chpId" | "riskLevel", value: string) => {
+    setFilters((prev) => {
+      const current = prev[key] as string[];
+      if (value === "all") {
+        return { ...prev, [key]: ["all"] };
+      }
+      let next = current.includes(value) ? current.filter((v) => v !== value) : [...current.filter((v) => v !== "all"), value];
+      if (next.length === 0) next = ["all"];
+      return { ...prev, [key]: next };
+    });
   };
 
   const handleApply = () => {
@@ -62,13 +78,13 @@ export function GlobalFilterBar({ onFilterChange, onExport }: GlobalFilterBarPro
   };
 
   const handleReset = () => {
-    const resetState = {
+    const resetState: FilterState = {
       dateRange: "30",
-      chpId: "all",
+      chpId: ["all"],
       facilityId: "all",
       referralStatus: "all",
       treatmentStatus: "all",
-      riskLevel: "all",
+      riskLevel: ["all"],
       search: "",
       county: "",
       subcounty: "",
@@ -97,9 +113,21 @@ export function GlobalFilterBar({ onFilterChange, onExport }: GlobalFilterBarPro
           <Button size="sm" onClick={handleApply} className="h-8 text-xs font-bold">
             Apply Filters
           </Button>
-          <Button variant="secondary" size="sm" onClick={onExport} className="h-8 text-xs font-bold bg-primary text-white hover:bg-primary/90">
-            <Download className="w-3 h-3 mr-2" /> Export
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="secondary" size="sm" className="h-8 text-xs font-bold bg-primary text-white hover:bg-primary/90">
+                <Download className="w-3 h-3 mr-2" /> Export
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => onExport("csv")} className="cursor-pointer text-xs">
+                Export as CSV
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onExport("pdf")} className="cursor-pointer text-xs">
+                Export as PDF
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
@@ -157,18 +185,42 @@ export function GlobalFilterBar({ onFilterChange, onExport }: GlobalFilterBarPro
         )}
 
         {/* CHP Filter */}
-        <div className="min-w-[140px] flex-shrink-0">
-          <Select value={filters.chpId} onValueChange={(val) => handleFilterChange("chpId", val)}>
-            <SelectTrigger className="h-9 text-xs font-medium bg-background">
-              <SelectValue placeholder="All CHPs" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All CHPs</SelectItem>
-              {chps.map((chp: any) => (
-                <SelectItem key={chp.id} value={chp.id}>{chp.firstName} {chp.lastName}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <div className="min-w-[180px] flex-shrink-0">
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="w-full h-9 justify-between text-xs font-medium bg-background">
+                {filters.chpId.includes("all") ? "All CHPs" : `${filters.chpId.length} Selected`}
+                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[200px] p-0" align="start">
+              <Command>
+                <CommandInput placeholder="Search CHPs..." className="h-9 text-xs" />
+                <CommandList>
+                  <CommandEmpty>No CHPs found.</CommandEmpty>
+                  <CommandGroup>
+                    <CommandItem
+                      onSelect={() => toggleMultiSelect("chpId", "all")}
+                      className="text-xs"
+                    >
+                      <Check className={cn("mr-2 h-4 w-4", filters.chpId.includes("all") ? "opacity-100" : "opacity-0")} />
+                      All CHPs
+                    </CommandItem>
+                    {chps.map((chp: any) => (
+                      <CommandItem
+                        key={chp.id}
+                        onSelect={() => toggleMultiSelect("chpId", chp.id)}
+                        className="text-xs"
+                      >
+                        <Check className={cn("mr-2 h-4 w-4", filters.chpId.includes(chp.id) ? "opacity-100" : "opacity-0")} />
+                        {chp.firstName} {chp.lastName}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
         </div>
 
         {/* Referral Status */}
@@ -202,19 +254,39 @@ export function GlobalFilterBar({ onFilterChange, onExport }: GlobalFilterBarPro
         </div>
 
         {/* Risk Level */}
-        <div className="min-w-[140px] flex-shrink-0">
-          <Select value={filters.riskLevel} onValueChange={(val) => handleFilterChange("riskLevel", val)}>
-            <SelectTrigger className="h-9 text-xs font-medium bg-background">
-              <SelectValue placeholder="Risk Level" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Risks</SelectItem>
-              <SelectItem value="LOW_RISK">Low</SelectItem>
-              <SelectItem value="MODERATE_RISK">Medium</SelectItem>
-              <SelectItem value="HIGH_RISK">High</SelectItem>
-              <SelectItem value="CRITICAL_RISK">Critical</SelectItem>
-            </SelectContent>
-          </Select>
+        <div className="min-w-[180px] flex-shrink-0">
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="w-full h-9 justify-between text-xs font-medium bg-background">
+                {filters.riskLevel.includes("all") ? "All Risks" : `${filters.riskLevel.length} Selected`}
+                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[180px] p-0" align="start">
+              <Command>
+                <CommandList>
+                  <CommandGroup>
+                    <CommandItem onSelect={() => toggleMultiSelect("riskLevel", "all")} className="text-xs">
+                      <Check className={cn("mr-2 h-4 w-4", filters.riskLevel.includes("all") ? "opacity-100" : "opacity-0")} />
+                      All Risks
+                    </CommandItem>
+                    <CommandItem onSelect={() => toggleMultiSelect("riskLevel", "LOW_RISK")} className="text-xs">
+                      <Check className={cn("mr-2 h-4 w-4", filters.riskLevel.includes("LOW_RISK") ? "opacity-100" : "opacity-0")} />
+                      Low Risk
+                    </CommandItem>
+                    <CommandItem onSelect={() => toggleMultiSelect("riskLevel", "MODERATE_RISK")} className="text-xs">
+                      <Check className={cn("mr-2 h-4 w-4", filters.riskLevel.includes("MODERATE_RISK") ? "opacity-100" : "opacity-0")} />
+                      Medium Risk
+                    </CommandItem>
+                    <CommandItem onSelect={() => toggleMultiSelect("riskLevel", "HIGH_RISK")} className="text-xs">
+                      <Check className={cn("mr-2 h-4 w-4", filters.riskLevel.includes("HIGH_RISK") ? "opacity-100" : "opacity-0")} />
+                      High Risk
+                    </CommandItem>
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
         </div>
       </div>
     </div>
