@@ -98,14 +98,26 @@ export function ExpandedScreeningRow({ row }: ExpandedScreeningRowProps) {
                 data.referrals.map((ref: any, i: number) => (
                   <div key={i} className="border-l-2 border-primary/30 pl-3 relative">
                     <div className="absolute -left-[5px] top-1 w-2 h-2 rounded-full bg-primary" />
-                    <p className="text-[10px] font-bold text-muted-foreground">{dayjs(ref.createdAt).format("MMM D, YYYY")}</p>
+                    <p className="text-[10px] font-bold text-muted-foreground">{dayjs(ref.createdAt).format("MMM D, YYYY h:mm A")}</p>
                     <p className="text-xs font-semibold">Referred to {ref.healthFacility?.name}</p>
                     <Badge variant="secondary" className="mt-1 text-[9px]">{ref.status}</Badge>
                     
                     {ref.tests && ref.tests.map((test: any, j: number) => (
-                      <div key={j} className="mt-2 text-xs">
-                        <span className="text-muted-foreground block">Treatment/Action:</span>
-                        <span className="font-bold">{test.actionTaken || "Pending"}</span>
+                      <div key={j} className="mt-3 text-xs bg-background/50 p-2 rounded border border-border/50">
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="font-bold">{test.testType?.replace(/_/g, " ") || "Unknown Test"}</span>
+                          <span className="text-[10px] text-muted-foreground">{dayjs(test.createdAt).format("MMM D, YYYY h:mm A")}</span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 mt-1">
+                          <div>
+                            <span className="text-muted-foreground block text-[10px]">Result:</span>
+                            <span className="font-semibold">{test.testResult?.replace(/_/g, " ") || "Pending"}</span>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground block text-[10px]">Action Taken:</span>
+                            <span className="font-semibold">{test.actionTaken?.replace(/_/g, " ") || "Pending"}</span>
+                          </div>
+                        </div>
                       </div>
                     ))}
                   </div>

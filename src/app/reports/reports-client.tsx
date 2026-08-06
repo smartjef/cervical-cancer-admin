@@ -255,10 +255,16 @@ export default function ReportsPage() {
           Client: `${item.client?.firstName} ${item.client?.lastName}`,
           Age: item.scoringResult?.clientAge,
           Location: `${item.client?.ward}, ${item.client?.subcounty}`,
-          Date: dayjs(item.createdAt).format("YYYY-MM-DD"),
+          Date: dayjs(item.createdAt).format("YYYY-MM-DD HH:mm"),
           CHP: `${item.provider?.firstName} ${item.provider?.lastName}`,
           Risk: item.scoringResult?.interpretation,
           Score: item.scoringResult?.aggregateScore,
+          "Referred To": item.referrals?.map((r: any) => r.healthFacility?.name).join("; ") || "None",
+          "Referral Time": item.referrals?.map((r: any) => dayjs(r.createdAt).format("YYYY-MM-DD HH:mm")).join("; ") || "N/A",
+          "Tests": item.referrals?.map((r: any) => r.tests?.map((t: any) => t.testType?.replace(/_/g, " ")).join(", ") || "None").join("; ") || "N/A",
+          "Test Results": item.referrals?.map((r: any) => r.tests?.map((t: any) => t.testResult?.replace(/_/g, " ")).join(", ") || "None").join("; ") || "N/A",
+          "Treatment": item.referrals?.map((r: any) => r.tests?.map((t: any) => t.actionTaken?.replace(/_/g, " ") || "Pending").join(", ") || "None").join("; ") || "N/A",
+          "Test Time": item.referrals?.map((r: any) => r.tests?.map((t: any) => dayjs(t.createdAt).format("YYYY-MM-DD HH:mm")).join(", ") || "None").join("; ") || "N/A",
         }));
         exportToCSV(mappedData, `screening-report-${dayjs().format("YYYY-MM-DD")}`, Object.keys(mappedData[0]).map(k => ({ key: k, label: k })));
       } else {
